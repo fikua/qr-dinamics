@@ -41,7 +41,7 @@ type pageData struct {
 
 // NewHandler renders the page once; it never changes at runtime.
 func NewHandler(info Info) (*Handler, error) {
-	t, err := template.ParseFS(files, "landing.html")
+	t, err := template.New("landing.html").Funcs(brand.TemplateFuncs()).ParseFS(files, "landing.html")
 	if err != nil {
 		return nil, err
 	}

@@ -68,7 +68,7 @@ func TestAssets(t *testing.T) {
 
 func TestAssetURLsAreVersioned(t *testing.T) {
 	_, body, _ := get(t, Info{PublicURL: "https://qr.test", ContactEmail: "a@b.c"}, "/")
-	for _, ref := range []string{`/brand/brand.css?v=`, `/landing/landing.css?v=`} {
+	for _, ref := range []string{`/brand/brand.css?v=`, `/landing/landing.css?v=`, "<!--email_off-->", "<!--/email_off-->"} {
 		if !strings.Contains(body, ref) {
 			t.Errorf("unversioned asset: want %q", ref)
 		}

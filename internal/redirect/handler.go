@@ -61,7 +61,7 @@ func (h *Handler) health(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("ok"))
 }
 
-var neutralPage = template.Must(template.New("neutral").Parse(`<!doctype html>
+var neutralPage = template.Must(template.New("neutral").Funcs(brand.TemplateFuncs()).Parse(`<!doctype html>
 <html lang="ca">
 <head>
 <meta charset="utf-8">
@@ -79,6 +79,7 @@ p{color:var(--muted)}
 </style>
 </head>
 <body>
+{{emailOff}}
 <main><div class="box">
 <img src="/brand/fikua-icon.svg" alt="">
 <h1>Aquest codi QR no està disponible</h1>
@@ -87,6 +88,7 @@ p{color:var(--muted)}
 <p><small><a href="mailto:{{.Email}}?subject=Den%C3%BAncia%20QR">Denunciar un ús abusiu</a> · <a href="/legal/privacitat">Privacitat</a> · <a href="/legal/avis-legal">Avís legal</a></small></p>
 <p><small>Aquesta pàgina no fa servir cookies.</small></p>
 </div></main>
+{{emailOn}}
 </body>
 </html>`))
 

@@ -37,6 +37,9 @@ func TestPagesRender(t *testing.T) {
 		if !strings.Contains(body, "/brand/brand.css?v=") || !strings.Contains(body, "/legal/legal.css?v=") {
 			t.Fatalf("%s: stylesheet URLs must be versioned (stale CDN cache)", p.Slug)
 		}
+		if !strings.Contains(body, "<!--email_off-->") || !strings.Contains(body, "<!--/email_off-->") {
+			t.Fatalf("%s: contact addresses must be excluded from Cloudflare e-mail obfuscation", p.Slug)
+		}
 		if h.Get("Content-Security-Policy") == "" {
 			t.Fatalf("%s: no CSP", p.Slug)
 		}
@@ -62,7 +65,7 @@ func TestHolder(t *testing.T) {
 		t.Fatal("Complete()")
 	}
 	_, body, _ = serve(t, Info{Holder: h, ContactEmail: "a@b.c"}, "/legal/avis-legal")
-	if !strings.Contains(body, "Nom Cognom, amb NIF 00000000T") || strings.Contains(body, "pendents") {
+	if !strings.Contains(body, "Nom Cognom, amb NIF 00000000T i domicili a Carrer 1, Barcelona.</p>") || strings.Contains(body, "pendents") {
 		t.Fatal("complete holder not shown")
 	}
 }

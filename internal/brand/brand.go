@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"embed"
 	"encoding/hex"
+	"html/template"
 	"io/fs"
 	"net/http"
 )
@@ -59,4 +60,16 @@ func Routes(mux *http.ServeMux) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		files.ServeHTTP(w, r)
 	}))
+}
+
+// TemplateFuncs are shared by every page template. emailOff/emailOn wrap the
+// page body in Cloudflare's markers so its Email Obfuscation leaves our
+// addresses alone: it replaces them with "[email protected]" and a script
+// that our Content-Security-Policy blocks, hiding the contact address.
+// html/template strips comments, so the markers are emitted as trusted HTML.
+func TemplateFuncs() template.FuncMap {
+	return template.FuncMap{
+		"emailOff": func() template.HTML { return "<!--email_off-->" },
+		"emailOn":  func() template.HTML { return "<!--/email_off-->" },
+	}
 }

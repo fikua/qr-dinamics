@@ -53,7 +53,7 @@ var funcs = template.FuncMap{
 
 // NewRenderer parses every page template. contactEmail goes in every footer.
 func NewRenderer(contactEmail string) (*Renderer, error) {
-	layout, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html")
+	layout, err := template.New("layout.html").Funcs(funcs).Funcs(brand.TemplateFuncs()).ParseFS(templateFS, "templates/layout.html")
 	if err != nil {
 		return nil, fmt.Errorf("parse layout: %w", err)
 	}

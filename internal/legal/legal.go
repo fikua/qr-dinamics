@@ -94,7 +94,7 @@ type pageData struct {
 func NewHandler(info Info) (*Handler, error) {
 	h := &Handler{info: info, pages: map[string]*template.Template{}}
 	for _, p := range Pages {
-		t, err := template.ParseFS(templateFS, "templates/layout.html", "templates/"+p.Slug+".html")
+		t, err := template.New("layout.html").Funcs(brand.TemplateFuncs()).ParseFS(templateFS, "templates/layout.html", "templates/"+p.Slug+".html")
 		if err != nil {
 			return nil, err
 		}
