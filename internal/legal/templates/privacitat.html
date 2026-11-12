@@ -1,0 +1,53 @@
+{{define "body"}}
+<p>Aquesta política explica quines dades tracta QR dinàmics, per què, quant de temps i quins drets tens. Està escrita perquè s'entengui; si tens dubtes, escriu a <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>Responsable del tractament</h2>
+<p>{{template "holder" .}}. Contacte: <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>Quines dades tractem</h2>
+<table>
+<thead><tr><th>Dades</th><th>Per a què</th><th>Base legal</th><th>Quant de temps</th></tr></thead>
+<tbody>
+<tr><td>Correu electrònic i contrasenya (només en guardem el hash)</td><td>Crear i protegir el teu compte, enviar-te els correus del servei</td><td>Execució del contracte (art. 6.1.b RGPD)</td><td>Mentre el compte existeixi. Si no confirmes el correu, l'esborrem al cap de {{.Retention.UnverifiedDays}} dies.</td></tr>
+<tr><td>Codis QR: nom intern, adreça de destí i historial de canvis</td><td>Prestar el servei</td><td>Execució del contracte</td><td>Fins que esborres el codi o el compte. El codi curt es conserva sense cap altra dada perquè no es reutilitzi mai.</td></tr>
+<tr><td>Escanejos: data i hora, país i tipus de dispositiu</td><td>Mostrar-te les estadístiques dels teus codis</td><td>Execució del contracte</td><td>{{.Retention.ScanMonths}} mesos; després s'esborren automàticament.</td></tr>
+<tr><td>Registre d'acceptació: quina versió dels termes i de la privacitat vas acceptar, si vols rebre novetats, i quan</td><td>Poder demostrar el consentiment</td><td>Obligació legal i interès legítim (art. 6.1.c i 6.1.f)</td><td>Mentre el compte existeixi.</td></tr>
+<tr><td>Cookie de sessió</td><td>Mantenir la sessió iniciada</td><td>Necessària per al servei</td><td>{{.Retention.SessionDays}} dies o fins que tanquis la sessió. Vegeu la <a href="/legal/cookies">política de cookies</a>.</td></tr>
+</tbody>
+</table>
+<p>Només et demanem el correu i una contrasenya. No et demanem nom, telèfon, adreça ni targeta per registrar-te.</p>
+<p>Les còpies de seguretat de la base de dades es fan cada dia i es conserven {{.Retention.BackupDays}} dies; una dada esborrada pot romandre-hi fins aquest termini.</p>
+
+<h2>Persones que escanegen un codi</h2>
+<p>Si escaneges un codi QR del servei, no et demanem res ni et posem cookies. Registrem la data, el país (deduït de l'adreça IP per la xarxa de Cloudflare) i el tipus de dispositiu (mòbil, tauleta o ordinador). L'adreça IP no es desa mai. Aquestes dades no permeten identificar-te.</p>
+
+<h2>Màrqueting</h2>
+<p>Només t'enviarem novetats del producte si ho has acceptat expressament, en una casella separada i desmarcada. Pots retirar el consentiment quan vulguis a la pàgina del compte o amb l'enllaç de baixa de cada correu de novetats. Els correus del servei (confirmació, seguretat, facturació) no són publicitat i no tenen enllaç de baixa.</p>
+
+<h2>Proveïdors que tracten dades</h2>
+<table>
+<thead><tr><th>Proveïdor</th><th>Servei</th><th>On</th></tr></thead>
+<tbody>
+<tr><td>OVH SAS (OVHcloud)</td><td>Servidor on s'executa el servei, base de dades i còpies de seguretat</td><td>França (UE)</td></tr>
+<tr><td>Cloudflare, Inc.</td><td>DNS, xarxa de distribució i protecció; control d'accés al panell durant la beta. Tracta adreces IP de forma transitòria.</td><td>Xarxa global. Transferències fora de l'UE emparades pel Marc de Privacitat de Dades UE-EUA i les clàusules contractuals tipus.</td></tr>
+{{if .SafeBrowsingEnabled}}<tr><td>Google LLC (Safe Browsing)</td><td>Comprovar que les adreces de destí no siguin perilloses. Només s'envia l'adreça de destí.</td><td>EUA; Marc de Privacitat de Dades UE-EUA</td></tr>{{end}}
+</tbody>
+</table>
+<p>Quan hi hagi pagaments i correu transaccional, n'afegirem aquí els proveïdors abans de començar a fer-los servir.</p>
+<p>No venem ni cedim dades a tercers. No fem servir analítica, publicitat ni rastrejadors. No fem servir intel·ligència artificial amb les teves dades ni les fem servir per entrenar models.</p>
+
+<h2>Els teus drets</h2>
+<p>Tens dret d'accés, rectificació, supressió, limitació, oposició i portabilitat, i a retirar el consentiment. Des de la pàgina <a href="{{.PanelURL}}/compte">Compte</a> pots, sense escriure'ns:</p>
+<ul>
+<li>descarregar totes les teves dades (JSON) i els teus codis (CSV);</li>
+<li>esborrar el compte i totes les dades associades;</li>
+<li>activar o retirar el consentiment de màrqueting.</li>
+</ul>
+<p>Per a qualsevol altra petició, escriu a <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>; responem en un mes com a màxim. Si creus que no hem tractat bé les teves dades, pots reclamar a l'<a href="https://www.aepd.es">Agència Espanyola de Protecció de Dades</a>.</p>
+
+<h2>Menors</h2>
+<p>El servei és per a negocis i professionals majors d'edat. No està adreçat a menors i no en recollim dades conscientment.</p>
+
+<h2>Canvis</h2>
+<p>Si canviem aquesta política de manera substancial, t'avisarem per correu abans que s'apliqui. La versió vigent és sempre en aquesta pàgina.</p>
+{{end}}

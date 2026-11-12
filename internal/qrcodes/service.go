@@ -261,9 +261,25 @@ func (s *Service) SetPaused(ctx context.Context, ownerID, id int64, paused bool)
 	return nil
 }
 
-// Delete frees the QR's quota slot; its short code is kept and never reused (US-06).
+// Delete frees the QR's quota slot and erases its data (name, destination,
+// history, scans). The short code is kept as a tombstone and never reused (US-06).
 func (s *Service) Delete(ctx context.Context, ownerID, id int64) error {
-	return s.exec1(ctx, `UPDATE qr_codes SET status = 'deleted', updated_at = now() WHERE id = $1 AND account_id = $2 AND status IN ('active', 'paused')`, id, ownerID)
+	return pgx.BeginFunc(ctx, s.db, func(tx pgx.Tx) error {
+		tag, err := tx.Exec(ctx, `
+			UPDATE qr_codes SET status = 'deleted', name = '', destination = '', updated_at = now()
+			WHERE id = $1 AND account_id = $2 AND status IN ('active', 'paused')`, id, ownerID)
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() == 0 {
+			return ErrNotFound
+		}
+		if _, err := tx.Exec(ctx, `DELETE FROM destination_changes WHERE qr_id = $1`, id); err != nil {
+			return err
+		}
+		_, err = tx.Exec(ctx, `DELETE FROM scans WHERE qr_id = $1`, id)
+		return err
+	})
 }
 
 // History returns the destination changes of a QR, newest first.

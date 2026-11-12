@@ -70,3 +70,15 @@ func (rw rewrite) RoundTrip(r *http.Request) (*http.Response, error) {
 	req.Host = u.Host
 	return http.DefaultTransport.RoundTrip(req)
 }
+
+func TestNew(t *testing.T) {
+	if _, ok := New("").(Disabled); !ok {
+		t.Fatal("no key: want the disabled checker")
+	}
+	if err := (Disabled{}).Check(context.Background(), "https://example.com"); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := New("k").(*SafeBrowsing); !ok {
+		t.Fatal("with key: want Safe Browsing")
+	}
+}

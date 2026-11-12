@@ -1,0 +1,39 @@
+{{define "body"}}
+<p>Aquests termes regulen l'ús de QR dinàmics. Per crear un compte cal acceptar-los, juntament amb la <a href="/legal/privacitat">política de privacitat</a>.</p>
+
+<h2>Qui presta el servei</h2>
+<p>{{template "holder" .}}. Contacte: <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>Què ofereix</h2>
+<p>Crear codis QR que redirigeixen a una adreça web, canviar aquesta adreça sense reimprimir el codi, pausar-los o esborrar-los, i veure'n el nombre d'escanejos. El servei és per a negocis i professionals majors d'edat; no és un servei per a consumidors.</p>
+
+<h2>Beta</h2>
+<p>El servei és en beta: és gratuït, pot canviar i pot tenir errors. Durant la beta no hi ha cap càrrec ni cap pagament, i no es demana cap targeta.</p>
+
+<h2>Preus, renovació i baixa</h2>
+<p>Quan hi hagi plans de pagament, el preu final (amb IVA), la periodicitat i la renovació automàtica es mostraran clarament abans de pagar, i t'avisarem per correu abans de cada renovació anual. No hi haurà càrrecs ocults. Podràs donar-te de baixa des del panell amb el mateix nombre de passos que per subscriure't, i la política de reemborsaments s'afegirà aquí abans de començar a cobrar. Cap canvi de preu no s'aplicarà sense avisar-te prèviament.</p>
+
+<h2>Disponibilitat</h2>
+<p>Treballem perquè les redireccions funcionin sempre, també quan el panell o la base de dades no estan disponibles. Tot i així, durant la beta no garantim cap nivell de disponibilitat i el servei es pot interrompre per manteniment o per causes alienes. No prometem que un codi funcioni per sempre: si mai tanquem el servei, t'avisarem amb antelació.</p>
+
+<h2>Ús acceptable</h2>
+<p>No pots fer servir el servei per redirigir a contingut il·legal, enganyós (phishing, estafes), programari maliciós, contingut que infringeixi drets de tercers (drets d'autor, marques) ni per enviar correu no sol·licitat. Comprovem les adreces de destí i podem bloquejar un codi o un compte que incompleixi aquestes normes; t'informarem del motiu i podràs respondre a <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>Denúncies</h2>
+<p>Qualsevol persona pot denunciar un codi des de l'enllaç «Denunciar un ús abusiu» de la pàgina que es mostra quan un codi no està disponible, o escrivint a <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>. Vegeu l'<a href="/legal/avis-legal">avís legal</a>.</p>
+
+<h2>El teu contingut</h2>
+<p>Ets responsable de les adreces de destí i dels noms que hi poses. Continuen sent teus; només els fem servir per prestar el servei.</p>
+
+<h2>Baixa i esborrat</h2>
+<p>Pots esborrar el compte quan vulguis des de la pàgina Compte. En esborrar-lo, els teus codis deixen de redirigir i mostren una pàgina neutra; el codi curt no es reutilitza mai. Podem tancar un compte que incompleixi aquests termes, amb avís previ excepte en casos greus.</p>
+
+<h2>Responsabilitat</h2>
+<p>El servei es presta tal com és. En la mesura que ho permeti la llei, no responem de danys indirectes ni de la pèrdua de negoci derivada d'una interrupció del servei. Res d'aquests termes limita la responsabilitat que la llei no permet limitar.</p>
+
+<h2>Canvis en els termes</h2>
+<p>Si canviem aquests termes de manera substancial, t'avisarem per correu amb almenys 15 dies d'antelació. Si no hi estàs d'acord, pots esborrar el compte abans que s'apliquin.</p>
+
+<h2>Llei aplicable</h2>
+<p>Aquests termes es regeixen per la llei espanyola.</p>
+{{end}}

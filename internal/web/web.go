@@ -21,7 +21,8 @@ var staticFS embed.FS
 
 // Renderer renders pages: each page template is parsed together with the layout.
 type Renderer struct {
-	pages map[string]*template.Template
+	pages        map[string]*template.Template
+	contactEmail string
 }
 
 var funcs = template.FuncMap{
@@ -40,8 +41,8 @@ var funcs = template.FuncMap{
 	},
 }
 
-// NewRenderer parses every page template.
-func NewRenderer() (*Renderer, error) {
+// NewRenderer parses every page template. contactEmail goes in every footer.
+func NewRenderer(contactEmail string) (*Renderer, error) {
 	layout, err := template.New("layout.html").Funcs(funcs).ParseFS(templateFS, "templates/layout.html")
 	if err != nil {
 		return nil, fmt.Errorf("parse layout: %w", err)
@@ -50,7 +51,7 @@ func NewRenderer() (*Renderer, error) {
 	if err != nil {
 		return nil, err
 	}
-	r := &Renderer{pages: map[string]*template.Template{}}
+	r := &Renderer{pages: map[string]*template.Template{}, contactEmail: contactEmail}
 	for _, n := range names {
 		name := strings.TrimSuffix(strings.TrimPrefix(n, "templates/"), ".html")
 		if name == "layout" {
@@ -67,11 +68,12 @@ func NewRenderer() (*Renderer, error) {
 
 // Page is the data every page gets.
 type Page struct {
-	Title  string
-	Email  string // signed-in user, empty when anonymous
-	Error  string
-	Notice string
-	Data   any
+	Title        string
+	ContactEmail string // set by Render, shown in the footer
+	Email        string // signed-in user, empty when anonymous
+	Error        string
+	Notice       string
+	Data         any
 }
 
 // Render writes a page with the given status.
@@ -82,6 +84,7 @@ func (r *Renderer) Render(w http.ResponseWriter, status int, name string, p Page
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+	p.ContactEmail = r.contactEmail
 	var buf bytes.Buffer
 	if err := t.ExecuteTemplate(&buf, "layout.html", p); err != nil {
 		slog.Error("render template", "name", name, "err", err)

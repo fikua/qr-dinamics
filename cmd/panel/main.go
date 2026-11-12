@@ -8,17 +8,16 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
-	"qrdinamics/internal/access"
-	"qrdinamics/internal/accounts"
 	"qrdinamics/internal/config"
 	"qrdinamics/internal/db"
 	"qrdinamics/internal/mail"
-	"qrdinamics/internal/qrcodes"
+	"qrdinamics/internal/panel"
+	"qrdinamics/internal/privacy"
 	"qrdinamics/internal/safety"
-	"qrdinamics/internal/web"
 )
 
 func main() {
@@ -49,39 +48,29 @@ func run() error {
 		return err
 	}
 
-	view, err := web.NewRenderer()
+	p, err := panel.New(cfg, panel.Deps{DB: pool, Mail: mail.Log{}, Checker: safety.New(cfg.SafeBrowsingKey)})
 	if err != nil {
 		return err
 	}
-	accountSvc := accounts.NewService(pool, mail.Log{}, cfg.PanelBaseURL)
-	accountHandler := accounts.NewHandler(accountSvc, view, cfg.PanelBaseURL)
-	qrHandler := qrcodes.NewHandler(qrcodes.NewService(pool, safety.New(cfg.SafeBrowsingKey)), view, cfg.RedirectBaseURL)
-
-	mux := http.NewServeMux()
-	mux.Handle("GET /static/", web.Static())
-	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/qr", http.StatusSeeOther)
-	})
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
-		if err := pool.Ping(r.Context()); err != nil {
-			http.Error(w, "database unavailable", http.StatusServiceUnavailable)
-			return
-		}
-		w.Write([]byte("ok"))
-	})
-	accountHandler.Routes(mux)
-	qrHandler.Routes(mux, accountHandler.RequireAccount)
-
-	// CrossOriginProtection rejects cross-site POSTs (CSRF) using Sec-Fetch-Site / Origin.
-	handler := web.SecurityHeaders(http.NewCrossOriginProtection().Handler(mux))
 	if cfg.AccessTeamDomain != "" {
-		handler = access.NewVerifier(cfg.AccessTeamDomain, cfg.AccessAudience).Middleware(handler)
 		slog.Info("panel restricted to Cloudflare Access", "team", cfg.AccessTeamDomain)
 	}
 
+	// Retention policy (published in the privacy policy): once at start, then daily.
+	var wg sync.WaitGroup
+	bg, stopBG := context.WithCancel(context.Background())
+	defer func() { stopBG(); wg.Wait() }()
+	wg.Go(func() {
+		p.Privacy.RunPurge(bg, 24*time.Hour,
+			func(r privacy.PurgeResult) {
+				slog.Info("retention purge", "scans", r.Scans, "sessions", r.Sessions, "tokens", r.Tokens, "unverified_accounts", r.UnverifiedAccounts)
+			},
+			func(err error) { slog.Error("retention purge", "err", err) })
+	})
+
 	srv := &http.Server{
 		Addr:              cfg.Addr,
-		Handler:           handler,
+		Handler:           p.Handler,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,

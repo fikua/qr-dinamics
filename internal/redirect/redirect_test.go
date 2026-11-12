@@ -34,7 +34,7 @@ func newServer(t *testing.T, rows ...Row) (*http.ServeMux, *Recorder) {
 	table.Apply(rows)
 	rec := NewRecorder(&fakeSink{}, func(string, error) {})
 	mux := http.NewServeMux()
-	(&Handler{Table: table, Recorder: rec, CountryHeader: "CF-IPCountry", AbuseEmail: "abus@example.com",
+	(&Handler{Table: table, Recorder: rec, CountryHeader: "CF-IPCountry", ContactEmail: "abus@example.com",
 		Now: func() time.Time { return time.Unix(0, 0) }}).Routes(mux)
 	return mux, rec
 }

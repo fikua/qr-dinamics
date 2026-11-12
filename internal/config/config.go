@@ -27,7 +27,8 @@ type Panel struct {
 	PanelBaseURL    string // public URL of the panel, used in e-mail links
 	RedirectBaseURL string // public URL encoded in every QR, e.g. https://qr.example
 	SafeBrowsingKey string // empty only in dev
-	AbuseEmail      string
+	ContactEmail    string // published contact: legal notice, abuse reports, data requests
+	Legal           LegalHolder
 	// Cloudflare Access: when both are set, every panel request must carry a
 	// valid Access JWT for this application (closed beta).
 	AccessTeamDomain string // e.g. fikua.cloudflareaccess.com
@@ -42,7 +43,29 @@ type Redirect struct {
 	SnapshotPath  string        // local copy of the redirect table, read when the database is down
 	SyncInterval  time.Duration // how often the in-memory table is refreshed from the database
 	CountryHeader string        // header set by the edge proxy with the ISO country code; empty = no country
-	AbuseEmail    string
+	ContactEmail  string
+	PanelBaseURL  string // linked from the legal pages
+	PublicBaseURL string // this service's public URL (what every QR encodes)
+	Legal         LegalHolder
+}
+
+// LegalHolder identifies who provides the service (legal notice, LSSI art. 10).
+// Optional while the panel is closed; required before it is public.
+type LegalHolder struct {
+	Name    string
+	TaxID   string
+	Address string
+}
+
+// Complete reports whether every field is set.
+func (h LegalHolder) Complete() bool { return h.Name != "" && h.TaxID != "" && h.Address != "" }
+
+func (r *reader) legal() LegalHolder {
+	return LegalHolder{
+		Name:    strings.TrimSpace(os.Getenv("LEGAL_HOLDER_NAME")),
+		TaxID:   strings.TrimSpace(os.Getenv("LEGAL_HOLDER_TAX_ID")),
+		Address: strings.TrimSpace(os.Getenv("LEGAL_HOLDER_ADDRESS")),
+	}
 }
 
 // LoadPanel reads the panel configuration.
@@ -55,12 +78,17 @@ func LoadPanel() (Panel, error) {
 		PanelBaseURL:     r.url("PANEL_BASE_URL"),
 		RedirectBaseURL:  r.url("REDIRECT_BASE_URL"),
 		SafeBrowsingKey:  os.Getenv("SAFE_BROWSING_API_KEY"),
-		AbuseEmail:       r.required("ABUSE_EMAIL"),
+		ContactEmail:     r.required("CONTACT_EMAIL"),
+		Legal:            r.legal(),
 		AccessTeamDomain: strings.TrimSpace(os.Getenv("CF_ACCESS_TEAM_DOMAIN")),
 		AccessAudience:   strings.TrimSpace(os.Getenv("CF_ACCESS_AUD")),
 	}
 	if (c.AccessTeamDomain == "") != (c.AccessAudience == "") {
 		r.errs = append(r.errs, errors.New("CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD go together: set both or neither"))
+	}
+	// A panel anyone can sign up to must identify its provider.
+	if c.AccessTeamDomain == "" && c.Env == Prod && !c.Legal.Complete() {
+		r.errs = append(r.errs, errors.New("LEGAL_HOLDER_NAME, LEGAL_HOLDER_TAX_ID and LEGAL_HOLDER_ADDRESS are required before the panel is public (no Cloudflare Access)"))
 	}
 	if c.Env == Prod && c.SafeBrowsingKey == "" {
 		r.errs = append(r.errs, errors.New("SAFE_BROWSING_API_KEY is required in prod"))
@@ -78,7 +106,10 @@ func LoadRedirect() (Redirect, error) {
 		SnapshotPath:  r.required("SNAPSHOT_PATH"),
 		SyncInterval:  r.duration("SYNC_INTERVAL", 10*time.Second),
 		CountryHeader: os.Getenv("COUNTRY_HEADER"),
-		AbuseEmail:    r.required("ABUSE_EMAIL"),
+		ContactEmail:  r.required("CONTACT_EMAIL"),
+		PanelBaseURL:  r.url("PANEL_BASE_URL"),
+		PublicBaseURL: r.url("REDIRECT_BASE_URL"),
+		Legal:         r.legal(),
 	}
 	if c.SyncInterval >= time.Minute {
 		r.errs = append(r.errs, errors.New("SYNC_INTERVAL must be under 1m: a destination change must be live in less than 60 s"))

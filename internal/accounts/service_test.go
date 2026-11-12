@@ -29,25 +29,57 @@ func TestRegisterVerifyLogin(t *testing.T) {
 	box := &outbox{}
 	s := NewService(testdb.Open(t), box, "https://app.example")
 
-	a, err := s.Register(ctx, "  Bar@Example.com ", "una-contrasenya")
+	if _, err := s.Register(ctx, Signup{Email: "bar@example.com", Password: "una-contrasenya"}); !errors.Is(err, ErrTermsNotAccepted) {
+		t.Fatalf("without accepting the terms: err = %v", err)
+	}
+	a, err := s.Register(ctx, Signup{Email: "  Bar@Example.com ", Password: "una-contrasenya", AcceptTerms: true})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if a.Email != "bar@example.com" || a.Verified() || a.Plan != "free" {
 		t.Fatalf("registered %+v", a)
 	}
-	if _, err := s.Register(ctx, "bar@example.com", "una-contrasenya"); !errors.Is(err, ErrEmailTaken) {
+	if _, err := s.Register(ctx, Signup{Email: "bar@example.com", Password: "una-contrasenya", AcceptTerms: true}); !errors.Is(err, ErrEmailTaken) {
 		t.Fatalf("duplicate: err = %v", err)
 	}
-	if _, err := s.Register(ctx, "x@example.com", "curta"); !errors.Is(err, ErrWeakPassword) {
+	if _, err := s.Register(ctx, Signup{Email: "x@example.com", Password: "curta", AcceptTerms: true}); !errors.Is(err, ErrWeakPassword) {
 		t.Fatalf("weak password: err = %v", err)
 	}
-	if _, err := s.Register(ctx, "no-es-correu", "una-contrasenya"); !errors.Is(err, ErrInvalidEmail) {
+	if _, err := s.Register(ctx, Signup{Email: "no-es-correu", Password: "una-contrasenya", AcceptTerms: true}); !errors.Is(err, ErrInvalidEmail) {
 		t.Fatalf("invalid email: err = %v", err)
 	}
 
 	if len(box.msgs) != 1 {
 		t.Fatalf("%d e-mails sent, want 1", len(box.msgs))
+	}
+	if !strings.Contains(box.msgs[0].Body, "https://app.example/compte") {
+		t.Fatal("transactional e-mail lacks the service footer")
+	}
+
+	// Consent record: terms and privacy accepted, marketing not, with version.
+	consents, err := s.Consents(ctx, a.ID)
+	if err != nil || len(consents) != 3 {
+		t.Fatalf("consents = %+v, %v", consents, err)
+	}
+	for _, c := range consents {
+		if c.Version != LegalVersion || c.Granted != (c.Kind != "marketing") {
+			t.Fatalf("consent %+v", c)
+		}
+	}
+	if m, _ := s.Marketing(ctx, a.ID); m {
+		t.Fatal("marketing must be off unless ticked")
+	}
+	if err := s.SetMarketing(ctx, a.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	if m, _ := s.Marketing(ctx, a.ID); !m {
+		t.Fatal("marketing not granted after SetMarketing(true)")
+	}
+	if err := s.CheckPassword(ctx, a.ID, "incorrecta!!"); !errors.Is(err, ErrInvalidCredentials) {
+		t.Fatalf("CheckPassword(wrong) = %v", err)
+	}
+	if err := s.CheckPassword(ctx, a.ID, "una-contrasenya"); err != nil {
+		t.Fatalf("CheckPassword(right) = %v", err)
 	}
 	link := box.msgs[0].Body[strings.Index(box.msgs[0].Body, "https://"):]
 	link = strings.Fields(link)[0]

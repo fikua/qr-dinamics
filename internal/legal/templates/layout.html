@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Page.Title}} · QR dinàmics</title>
+<link rel="stylesheet" href="/legal/legal.css">
+</head>
+<body>
+<a class="skip" href="#content">Salta al contingut</a>
+<main id="content">
+<nav class="legal" aria-label="Textos legals">
+{{range .Pages}}<a href="/legal/{{.Slug}}"{{if eq .Slug $.Page.Slug}} aria-current="page"{{end}}>{{.Title}}</a>{{end}}
+</nav>
+<article>
+<h1>{{.Page.Title}}</h1>
+{{if ne .Page.Slug "llicencies"}}<p class="meta">Versió {{.Version}}</p>{{end}}
+{{template "body" .}}
+</article>
+</main>
+<footer>QR dinàmics · Contacte: <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a></footer>
+</body>
+</html>
+
+{{define "holder"}}{{if .Holder.Complete}}{{.Holder.Name}}, amb NIF {{.Holder.TaxID}} i domicili a {{.Holder.Address}}{{else}}<span class="pending">Dades del titular pendents de publicació: el servei és en beta tancada i encara no s'ofereix al públic.</span>{{end}}{{end}}

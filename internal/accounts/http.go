@@ -71,8 +71,13 @@ func (h *Handler) registerForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) register(w http.ResponseWriter, r *http.Request) {
-	email, password := r.PostFormValue("email"), r.PostFormValue("password")
-	_, err := h.svc.Register(r.Context(), email, password)
+	in := Signup{
+		Email:       r.PostFormValue("email"),
+		Password:    r.PostFormValue("password"),
+		AcceptTerms: r.PostFormValue("accept_terms") == "on",
+		Marketing:   r.PostFormValue("marketing") == "on",
+	}
+	_, err := h.svc.Register(r.Context(), in)
 	if err != nil {
 		msg := ""
 		switch {
@@ -80,17 +85,20 @@ func (h *Handler) register(w http.ResponseWriter, r *http.Request) {
 			msg = "El correu no és vàlid."
 		case errors.Is(err, ErrWeakPassword):
 			msg = "La contrasenya ha de tenir almenys 10 caràcters."
+		case errors.Is(err, ErrTermsNotAccepted):
+			msg = "Per crear el compte has d'acceptar els termes i la política de privacitat."
 		case errors.Is(err, ErrEmailTaken):
 			msg = "Ja hi ha un compte amb aquest correu. Inicia la sessió."
 		default:
 			slog.Error("register", "err", err)
 			msg = "No s'ha pogut crear el compte. Torna-ho a provar."
 		}
-		h.view.Render(w, http.StatusUnprocessableEntity, "register", web.Page{Title: "Crea un compte", Error: msg, Data: map[string]string{"Email": email}})
+		h.view.Render(w, http.StatusUnprocessableEntity, "register", web.Page{Title: "Crea un compte", Error: msg,
+			Data: map[string]any{"Email": in.Email, "Marketing": in.Marketing}})
 		return
 	}
 	// Sign the new owner in straight away: they land on the "check your e-mail" page.
-	token, err := h.svc.Login(r.Context(), email, password)
+	token, err := h.svc.Login(r.Context(), in.Email, in.Password)
 	if err != nil {
 		slog.Error("login after register", "err", err)
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
@@ -161,6 +169,9 @@ func (h *Handler) setCookie(w http.ResponseWriter, token string) {
 		HttpOnly: true, Secure: h.secureCookie, SameSite: http.SameSiteLaxMode,
 	})
 }
+
+// ClearSession removes the session cookie (after the account is deleted).
+func (h *Handler) ClearSession(w http.ResponseWriter) { h.clearCookie(w) }
 
 func (h *Handler) clearCookie(w http.ResponseWriter) {
 	http.SetCookie(w, &http.Cookie{ // NOSONAR go:S2092 — Secure follows the panel's scheme, see setCookie

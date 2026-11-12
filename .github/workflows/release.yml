@@ -33,6 +33,8 @@ jobs:
           test -z "$(gofmt -l .)"
           go vet ./...
           go test ./...
+          ./scripts/third-party-licenses.sh
+          git diff --exit-code -- internal/legal/third_party_licenses.txt
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392  # v3.6.0

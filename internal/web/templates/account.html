@@ -1,0 +1,63 @@
+{{define "content"}}
+{{with .Data}}
+<h1>El teu compte</h1>
+
+<section class="card">
+  <h2>Dades</h2>
+  <dl class="facts">
+    <dt>Correu</dt><dd>{{.Account.Email}}</dd>
+    <dt>Pla</dt><dd>{{if eq .Account.Plan "free"}}Gratuït (beta){{else}}{{.Account.Plan}}{{end}}</dd>
+    <dt>Compte creat</dt><dd>{{date .Account.CreatedAt}}</dd>
+  </dl>
+</section>
+
+<section class="card">
+  <h2>Novetats per correu</h2>
+  <form method="post" action="/compte/marketing" class="stack">
+    <label class="check">
+      <input type="checkbox" name="marketing"{{if .Marketing}} checked{{end}}>
+      <span>Vull rebre novetats del producte per correu.</span>
+    </label>
+    <button type="submit" class="secondary">Desa la preferència</button>
+  </form>
+  <small class="muted">Els correus del servei (confirmació, seguretat) no són publicitat i els rebràs igualment.</small>
+</section>
+
+<section class="card">
+  <h2>Descarrega les teves dades</h2>
+  <p>Tot el que tenim sobre tu: compte, consentiments, codis QR, historial de destins i escanejos.</p>
+  <div class="row">
+    <a class="button secondary" href="/compte/dades.json">Totes les dades (JSON)</a>
+    <a class="button secondary" href="/compte/qr.csv">Els meus QR (CSV)</a>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Registre de consentiments</h2>
+  <table class="list">
+    <thead><tr><th>Data</th><th>Què</th><th>Versió</th><th>Decisió</th></tr></thead>
+    <tbody>
+    {{range .Consents}}
+      <tr><td>{{datetime .CreatedAt}}</td><td>{{template "consent" .Kind}}</td><td>{{.Version}}</td><td>{{if .Granted}}Acceptat{{else}}No acceptat{{end}}</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Esborra el compte</h2>
+  <p>S'esborraran el compte, els teus codis QR, l'historial i els escanejos. Els QR impresos deixaran de redirigir i mostraran una pàgina neutra. No es pot desfer: si vols conservar res, descarrega abans les teves dades.</p>
+  <form method="post" action="/compte/esborra" class="stack">
+    <label>Contrasenya
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+    <label>Escriu ESBORRA per confirmar
+      <input type="text" name="confirm" required autocomplete="off" spellcheck="false">
+    </label>
+    <button type="submit" class="danger">Esborra el compte definitivament</button>
+  </form>
+</section>
+{{end}}
+{{end}}
+
+{{define "consent"}}{{if eq . "terms"}}Termes i condicions{{else if eq . "privacy"}}Política de privacitat{{else if eq . "marketing"}}Novetats per correu{{else}}{{.}}{{end}}{{end}}

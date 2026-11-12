@@ -13,7 +13,7 @@ type Handler struct {
 	Table         *Table
 	Recorder      *Recorder
 	CountryHeader string
-	AbuseEmail    string
+	ContactEmail  string
 	Now           func() time.Time
 }
 
@@ -86,7 +86,8 @@ a{color:#1f5fd1}
 <h1>Aquest codi QR no està disponible</h1>
 <p>El codi que has escanejat no porta enlloc ara mateix. Pot ser que l'hagin pausat o retirat.</p>
 <p lang="es">Este código QR no está disponible en este momento.</p>
-<p><small><a href="mailto:{{.}}?subject=Denuncia%20QR">Denunciar un ús abusiu</a></small></p>
+<p><small><a href="mailto:{{.}}?subject=Den%C3%BAncia%20QR">Denunciar un ús abusiu</a> · <a href="/legal/privacitat">Privacitat</a> · <a href="/legal/avis-legal">Avís legal</a></small></p>
+<p><small>Aquesta pàgina no fa servir cookies.</small></p>
 </main>
 </body>
 </html>`))
@@ -94,8 +95,8 @@ a{color:#1f5fd1}
 func (h *Handler) neutral(w http.ResponseWriter, status int) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
-	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'")
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(status)
-	neutralPage.Execute(w, h.AbuseEmail)
+	neutralPage.Execute(w, h.ContactEmail)
 }

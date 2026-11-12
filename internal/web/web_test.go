@@ -7,7 +7,7 @@ import (
 )
 
 func TestRendererParsesEveryPage(t *testing.T) {
-	r, err := NewRenderer()
+	r, err := NewRenderer("hola@example.com")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,7 +21,7 @@ func TestRendererParsesEveryPage(t *testing.T) {
 			t.Fatalf("%s: error message not escaped", name)
 		}
 	}
-	for _, name := range []string{"qr_list", "qr_new", "qr_detail"} {
+	for _, name := range []string{"qr_list", "qr_new", "qr_detail", "account", "account_deleted"} {
 		if _, ok := r.pages[name]; !ok {
 			t.Fatalf("page %s not parsed", name)
 		}

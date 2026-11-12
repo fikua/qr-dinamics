@@ -7,19 +7,32 @@
 <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
+<a class="skip" href="#content">Salta al contingut</a>
 <header class="top">
   <a class="brand" href="/qr">QR dinàmics</a>
   {{if .Email}}
   <nav>
+    <a href="/qr">Els meus QR</a>
+    <a href="/compte">Compte</a>
     <span class="who">{{.Email}}</span>
     <form method="post" action="/logout"><button class="link" type="submit">Surt</button></form>
   </nav>
   {{end}}
 </header>
-<main>
+<main id="content" tabindex="-1">
   {{if .Error}}<p class="alert error" role="alert">{{.Error}}</p>{{end}}
   {{if .Notice}}<p class="alert notice" role="status">{{.Notice}}</p>{{end}}
   {{template "content" .}}
 </main>
+<footer class="site">
+  <nav aria-label="Textos legals">
+    <a href="/legal/avis-legal">Avís legal</a>
+    <a href="/legal/privacitat">Privacitat</a>
+    <a href="/legal/termes">Termes</a>
+    <a href="/legal/cookies">Cookies</a>
+    <a href="/legal/llicencies">Llicències</a>
+    <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>
+  </nav>
+</footer>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {{define "content"}}
 <section class="card narrow">
   <h1>Crea un compte</h1>
-  <p class="muted">Gratis i sense targeta. Tindràs el primer QR en un parell de minuts.</p>
+  <p class="muted">Gratuït durant la beta i sense targeta. Només et demanem el correu i una contrasenya.</p>
   <form method="post" action="/register" class="stack">
     <label>Correu electrònic
       <input type="email" name="email" required autocomplete="email" value="{{with .Data}}{{.Email}}{{end}}">
@@ -9,6 +9,14 @@
     <label>Contrasenya
       <input type="password" name="password" required minlength="10" autocomplete="new-password">
       <small class="muted">Almenys 10 caràcters.</small>
+    </label>
+    <label class="check">
+      <input type="checkbox" name="accept_terms" required>
+      <span>Accepto els <a href="/legal/termes" target="_blank" rel="noopener">termes i condicions</a> i la <a href="/legal/privacitat" target="_blank" rel="noopener">política de privacitat</a>.</span>
+    </label>
+    <label class="check">
+      <input type="checkbox" name="marketing"{{with .Data}}{{if .Marketing}} checked{{end}}{{end}}>
+      <span>Vull rebre novetats del producte per correu (opcional; pots donar-te de baixa quan vulguis).</span>
     </label>
     <button type="submit">Crea el compte</button>
   </form>

@@ -7,6 +7,8 @@
   --accent: #1f5fd1;
   --accent-text: #ffffff;
   --danger: #b42318;
+  --danger-text: #ffffff;
+  --input-border: #6e7781;
   --ok: #1a7f37;
   --warn-bg: #fff8e6;
   --warn-border: #f0c75e;
@@ -23,6 +25,8 @@
     --accent: #5b93f0;
     --accent-text: #0b0e12;
     --danger: #f0776c;
+    --danger-text: #0b0e12;
+    --input-border: #868f99;
     --ok: #4ac26b;
     --warn-bg: #2a2412;
     --warn-border: #7a6320;
@@ -87,7 +91,7 @@ label small, label span.muted { font-weight: 400; }
 input {
   font: inherit;
   padding: 9px 11px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   background: var(--bg);
   color: var(--text);
@@ -110,7 +114,7 @@ button, .button {
   cursor: pointer;
 }
 button.secondary, .button.secondary { background: transparent; color: var(--accent); }
-button.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+button.danger { background: var(--danger); border-color: var(--danger); color: var(--danger-text); }
 button.link { background: none; border: none; color: var(--accent); padding: 0; font-weight: 400; }
 form { margin: 0; }
 
@@ -142,3 +146,20 @@ table.list th { font-size: 13px; color: var(--muted); font-weight: 600; }
   table.list th:nth-child(2), table.list td:nth-child(2),
   table.list th:nth-child(4), table.list td:nth-child(4) { display: none; }
 }
+
+.skip { position: absolute; left: -999px; top: 0; background: var(--surface); color: var(--accent); padding: 8px 12px; z-index: 10; }
+.skip:focus { left: 8px; top: 8px; }
+main:focus { outline: none; }
+.top nav a { color: var(--text); text-decoration: none; font-size: 14px; }
+.top nav a:hover { text-decoration: underline; }
+
+label.check { flex-direction: row; align-items: flex-start; gap: 10px; font-weight: 400; }
+label.check input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--accent); }
+
+dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; }
+
+footer.site { max-width: 960px; margin: 0 auto; padding: 0 16px 32px; }
+footer.site nav { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; }
+footer.site a { color: var(--muted); }

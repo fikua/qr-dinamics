@@ -22,7 +22,7 @@ services:
       DATABASE_URL: postgres://qr:qr@db:5432/qr?sslmode=disable
       PANEL_BASE_URL: http://localhost:8080
       REDIRECT_BASE_URL: http://localhost:8081
-      ABUSE_EMAIL: abus@example.com
+      CONTACT_EMAIL: hola@example.com
       SAFE_BROWSING_API_KEY: ${SAFE_BROWSING_API_KEY:-}
     ports: ["127.0.0.1:8080:8080"]
     depends_on: { db: { condition: service_healthy } }
@@ -35,7 +35,9 @@ services:
       DATABASE_URL: postgres://qr:qr@db:5432/qr?sslmode=disable
       SNAPSHOT_PATH: /data/snapshot.json
       SYNC_INTERVAL: 5s
-      ABUSE_EMAIL: abus@example.com
+      CONTACT_EMAIL: hola@example.com
+      PANEL_BASE_URL: http://localhost:8080
+      REDIRECT_BASE_URL: http://localhost:8081
     ports: ["127.0.0.1:8081:8081"]
     volumes: [redirect:/data]
     # No depends_on on db on purpose: the redirect must start without it.
