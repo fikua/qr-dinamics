@@ -2,6 +2,8 @@
 
 Dynamic QR codes for small businesses: create a QR code, print it, and change where it points whenever you like. The redirect service keeps answering when the panel or the database are down.
 
+Project documentation (architecture, decisions, status) lives in [fikua-docs/docs/projects/qr-dinamics](https://github.com/fikua/fikua-docs/tree/main/docs/projects/qr-dinamics); this README covers only what a developer needs next to the code.
+
 ## Architecture
 
 Two Go binaries, one Docker image, and Postgres:
