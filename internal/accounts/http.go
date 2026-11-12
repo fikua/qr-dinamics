@@ -153,13 +153,18 @@ func (h *Handler) resend(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/qr?sent=1", http.StatusSeeOther)
 }
 
+// Session cookies are Secure whenever the panel is served over https
+// (PANEL_BASE_URL); only the local http dev stack gets them without it.
 func (h *Handler) setCookie(w http.ResponseWriter, token string) {
-	http.SetCookie(w, &http.Cookie{
+	http.SetCookie(w, &http.Cookie{ // NOSONAR go:S2092 — Secure follows the panel's scheme, see above
 		Name: sessionCookie, Value: token, Path: "/", MaxAge: int(sessionTTL.Seconds()),
 		HttpOnly: true, Secure: h.secureCookie, SameSite: http.SameSiteLaxMode,
 	})
 }
 
 func (h *Handler) clearCookie(w http.ResponseWriter) {
-	http.SetCookie(w, &http.Cookie{Name: sessionCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: true, Secure: h.secureCookie, SameSite: http.SameSiteLaxMode})
+	http.SetCookie(w, &http.Cookie{ // NOSONAR go:S2092 — Secure follows the panel's scheme, see setCookie
+		Name: sessionCookie, Value: "", Path: "/", MaxAge: -1,
+		HttpOnly: true, Secure: h.secureCookie, SameSite: http.SameSiteLaxMode,
+	})
 }

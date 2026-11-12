@@ -59,7 +59,9 @@ type Service struct {
 
 // NewService builds the service.
 func NewService(db *pgxpool.Pool, mail mailer.Sender, panelBaseURL string) *Service {
-	h, _ := bcrypt.GenerateFromPassword([]byte("timing-equalizer"), bcrypt.DefaultCost)
+	random := make([]byte, 32)
+	rand.Read(random)
+	h, _ := bcrypt.GenerateFromPassword(random, bcrypt.DefaultCost)
 	return &Service{db: db, mail: mail, panelBaseURL: panelBaseURL, dummyHash: h}
 }
 

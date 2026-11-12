@@ -46,7 +46,13 @@ func NewVerifier(teamDomain, audience string) *Verifier {
 func (v *Verifier) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := v.Verify(r.Context(), r.Header.Get(header)); err != nil {
-			slog.Warn("cloudflare access check failed", "err", err)
+			// The error can carry parts of the attacker-supplied token: log
+			// only a fixed reason.
+			reason := "invalid token"
+			if r.Header.Get(header) == "" {
+				reason = "missing token"
+			}
+			slog.Warn("cloudflare access check failed", "reason", reason)
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
