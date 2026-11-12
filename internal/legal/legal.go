@@ -87,6 +87,7 @@ type pageData struct {
 	ThirdPartyLicenses string
 	FontLicense        string
 	Year               int
+	BrandV, CSSV       string // asset versions for cache busting
 }
 
 // NewHandler parses the page templates.
@@ -136,6 +137,8 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request) {
 		},
 		ThirdPartyLicenses: thirdPartyLicenses,
 		FontLicense:        brand.FontLicense(),
+		BrandV:             brand.Version,
+		CSSV:               brand.Hash(css),
 		Year:               time.Now().Year(),
 	}
 	var buf bytes.Buffer

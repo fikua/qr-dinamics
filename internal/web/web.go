@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"qrdinamics/internal/brand"
 )
 
 //go:embed templates/*.html
@@ -25,8 +27,16 @@ type Renderer struct {
 	contactEmail string
 }
 
+// appCSSVersion versions /static/app.css in page links (cache busting).
+var appCSSVersion = func() string {
+	b, _ := staticFS.ReadFile("static/app.css")
+	return brand.Hash(b)
+}()
+
 var funcs = template.FuncMap{
-	"date": func(t time.Time) string { return t.Format("02/01/2006") },
+	"brandv": func() string { return brand.Version },
+	"appv":   func() string { return appCSSVersion },
+	"date":   func(t time.Time) string { return t.Format("02/01/2006") },
 	"datetime": func(t time.Time) string {
 		return t.Local().Format("02/01/2006 15:04")
 	},

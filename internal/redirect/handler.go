@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"qrdinamics/internal/brand"
 	"qrdinamics/internal/qrcodes"
 )
 
@@ -68,7 +69,7 @@ var neutralPage = template.Must(template.New("neutral").Parse(`<!doctype html>
 <meta name="robots" content="noindex">
 <title>Codi QR no disponible</title>
 <link rel="icon" href="/brand/fikua-icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/brand/brand.css">
+<link rel="stylesheet" href="/brand/brand.css?v={{.BrandV}}">
 <style>
 main{min-height:calc(100vh - 4px);display:grid;place-items:center;padding:16px}
 .box{max-width:440px;text-align:center}
@@ -83,7 +84,7 @@ p{color:var(--muted)}
 <h1>Aquest codi QR no està disponible</h1>
 <p>El codi que has escanejat no porta enlloc ara mateix. Pot ser que l'hagin pausat o retirat.</p>
 <p lang="es">Este código QR no está disponible en este momento.</p>
-<p><small><a href="mailto:{{.}}?subject=Den%C3%BAncia%20QR">Denunciar un ús abusiu</a> · <a href="/legal/privacitat">Privacitat</a> · <a href="/legal/avis-legal">Avís legal</a></small></p>
+<p><small><a href="mailto:{{.Email}}?subject=Den%C3%BAncia%20QR">Denunciar un ús abusiu</a> · <a href="/legal/privacitat">Privacitat</a> · <a href="/legal/avis-legal">Avís legal</a></small></p>
 <p><small>Aquesta pàgina no fa servir cookies.</small></p>
 </div></main>
 </body>
@@ -95,5 +96,5 @@ func (h *Handler) neutral(w http.ResponseWriter, status int) {
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self'; frame-ancestors 'none'")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(status)
-	neutralPage.Execute(w, h.ContactEmail)
+	neutralPage.Execute(w, struct{ Email, BrandV string }{h.ContactEmail, brand.Version})
 }

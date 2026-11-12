@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"qrdinamics/internal/brand"
 	"qrdinamics/internal/qrcodes"
 )
 
@@ -34,7 +35,8 @@ type Handler struct {
 
 type pageData struct {
 	Info
-	BetaMailto string
+	BetaMailto   string
+	BrandV, CSSV string // asset versions for cache busting
 }
 
 // NewHandler renders the page once; it never changes at runtime.
@@ -46,12 +48,12 @@ func NewHandler(info Info) (*Handler, error) {
 	mailto := fmt.Sprintf("mailto:%s?subject=%s&body=%s", info.ContactEmail,
 		url.PathEscape("Accés a la beta de QR dinàmics"),
 		url.PathEscape("Hola! M'agradaria provar QR dinàmics.\n\nNegoci:\nPer a què el faria servir:\n"))
-	var buf bytes.Buffer
-	if err := t.Execute(&buf, pageData{Info: info, BetaMailto: mailto}); err != nil {
-		return nil, err
-	}
 	css, err := files.ReadFile("landing.css")
 	if err != nil {
+		return nil, err
+	}
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, pageData{Info: info, BetaMailto: mailto, BrandV: brand.Version, CSSV: brand.Hash(css)}); err != nil {
 		return nil, err
 	}
 	// A real, scannable code: it encodes the landing page itself.

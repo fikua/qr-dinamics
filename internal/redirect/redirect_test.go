@@ -83,6 +83,9 @@ func TestNeutralPage(t *testing.T) {
 		if w.Code != http.StatusNotFound || w.Header().Get("Location") != "" {
 			t.Errorf("%s: status %d, Location %q; want the neutral page", path, w.Code, w.Header().Get("Location"))
 		}
+		if !strings.Contains(w.Body.String(), "/brand/brand.css?v=") {
+			t.Errorf("%s: neutral page stylesheet must be versioned", path)
+		}
 		if !strings.Contains(w.Body.String(), "mailto:abus@example.com") {
 			t.Errorf("%s: neutral page lacks the abuse link (RF-11)", path)
 		}

@@ -139,7 +139,7 @@ func TestOwnerJourney(t *testing.T) {
 	}
 	code, body, _ := c.get("/register")
 	expect(t, "register form", code, http.StatusOK)
-	contains(t, "register form", body, `name="accept_terms" required`, `name="marketing">`, "Salta al contingut", "/legal/privacitat")
+	contains(t, "register form", body, "/brand/brand.css?v=", "/static/app.css?v=", `name="accept_terms" required`, `name="marketing">`, "Salta al contingut", "/legal/privacitat")
 	if strings.Contains(body, `name="accept_terms" checked`) {
 		t.Fatal("terms checkbox must not be pre-ticked")
 	}

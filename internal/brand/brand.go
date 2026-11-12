@@ -4,13 +4,38 @@
 package brand
 
 import (
+	"crypto/sha256"
 	"embed"
+	"encoding/hex"
 	"io/fs"
 	"net/http"
 )
 
 //go:embed assets
 var assets embed.FS
+
+// Version changes whenever any brand asset changes. Pages add it to asset
+// URLs (?v=...) so browsers and the Cloudflare edge never serve stale files.
+var Version = func() string {
+	var parts [][]byte
+	fs.WalkDir(assets, "assets", func(path string, d fs.DirEntry, err error) error {
+		if err == nil && !d.IsDir() {
+			b, _ := assets.ReadFile(path)
+			parts = append(parts, []byte(path), b)
+		}
+		return nil
+	})
+	return Hash(parts...)
+}()
+
+// Hash returns a short content hash for cache-busting asset URLs.
+func Hash(parts ...[]byte) string {
+	h := sha256.New()
+	for _, p := range parts {
+		h.Write(p)
+	}
+	return hex.EncodeToString(h.Sum(nil))[:10]
+}
 
 // FontLicense is the Inter font licence (SIL OFL 1.1), shown on the
 // third-party licences page as the licence requires.

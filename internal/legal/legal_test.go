@@ -34,6 +34,9 @@ func TestPagesRender(t *testing.T) {
 		if !strings.Contains(body, "<h1>"+p.Title+"</h1>") || !strings.Contains(body, "hola@example.com") {
 			t.Fatalf("%s: missing title or contact", p.Slug)
 		}
+		if !strings.Contains(body, "/brand/brand.css?v=") || !strings.Contains(body, "/legal/legal.css?v=") {
+			t.Fatalf("%s: stylesheet URLs must be versioned (stale CDN cache)", p.Slug)
+		}
 		if h.Get("Content-Security-Policy") == "" {
 			t.Fatalf("%s: no CSP", p.Slug)
 		}
