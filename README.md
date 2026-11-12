@@ -1,59 +1,68 @@
 # QR dinàmics
 
-QR dinàmics per a petits negocis: crea un QR, imprimeix-lo i canvia'n el destí quan vulguis. El QR no deixa de funcionar mai, ni si el panell o la base de dades cauen.
+Dynamic QR codes for small businesses: create a QR code, print it, and change where it points whenever you like. A printed QR code never stops working, even when the panel or the database are down.
 
-## Arquitectura
+## Architecture
 
-Dos binaris Go i un Postgres:
+Two Go binaries, one Docker image, and Postgres:
 
-| Binari | Port | Què fa |
+| Binary | Port | What it does |
 | --- | --- | --- |
-| `cmd/panel` | 8080 | Panell del propietari (HTML renderitzat al servidor): registre, QR, estadístiques. Aplica les migracions. |
-| `cmd/redirect` | 8081 | `GET /{codi}` → 302 al destí. Respon des d'una taula en memòria sincronitzada cada `SYNC_INTERVAL` i desada en una instantània local; arrenca i respon encara que la BD estigui caiguda. Registra els escanejos per lots, fora del camí de la petició. |
+| `/panel` (`cmd/panel`) | 8080 | Owner's panel (server-rendered HTML): sign-up, QR codes, scan statistics. Applies the database migrations. Can be restricted to Cloudflare Access. |
+| `/redirect` (`cmd/redirect`) | 8081 | `GET /{code}` → 302 to the current destination. Answers from an in-memory table synced every `SYNC_INTERVAL` and saved to a local snapshot, so it starts and answers while the database is down. Records scans in batches, off the request path. |
 
-Organització per domini: `internal/accounts`, `internal/qrcodes`, `internal/redirect`, `internal/safety` i `internal/web`.
+Code is organized by domain: `internal/accounts`, `internal/qrcodes`, `internal/redirect`, `internal/safety`, `internal/access` and `internal/web`.
 
-## Desenvolupament
+## Development
 
-Abans del primer commit: `pre-commit install` (gitleaks bloqueja els commits amb secrets).
+Before your first commit: `pre-commit install` (gitleaks blocks commits that contain secrets).
 
 ```sh
-make up                # Postgres + panell (http://localhost:8080) + redirecció (http://localhost:8081)
-make test              # tests unitaris
-make test-integration  # unitaris + integració contra el Postgres del compose
+make up                # Postgres + panel (http://localhost:8080) + redirect (http://localhost:8081)
+make test              # unit tests
+make test-integration  # unit + integration tests against the compose Postgres
 make lint
 ```
 
-En dev, els correus (enllaç de verificació) s'escriuen al log: `docker compose logs panel`.
+In dev, e-mails (the verification link) are written to the log: `docker compose logs panel`.
 
-## Configuració
+The panel's user interface is in Catalan; code, comments and documentation are in English.
 
-| Variable | Servei | Obligatòria | Notes |
+## Configuration
+
+| Variable | Service | Required | Notes |
 | --- | --- | --- | --- |
-| `APP_ENV` | tots dos | sí | `dev` o `prod` |
-| `DATABASE_URL` | tots dos | sí | |
-| `ABUSE_EMAIL` | tots dos | sí | enllaç «Denunciar» de la pàgina neutra (RF-11) |
-| `PANEL_BASE_URL` | panell | sí | URL pública del panell (enllaços dels correus) |
-| `REDIRECT_BASE_URL` | panell | sí | domini que codifica cada QR |
-| `SAFE_BROWSING_API_KEY` | panell | en prod | sense clau, en dev no es comproven les URL |
-| `SNAPSHOT_PATH` | redirecció | sí | el directori ha de ser escrivible |
-| `SYNC_INTERVAL` | redirecció | no | per defecte `10s`; ha de ser < 1 min |
-| `COUNTRY_HEADER` | redirecció | no | capçalera del proxy amb el país (p. ex. `CF-IPCountry`); la IP no es guarda mai |
+| `APP_ENV` | both | yes | `dev` or `prod` |
+| `DATABASE_URL` | both | yes | |
+| `ABUSE_EMAIL` | both | yes | "Report abuse" link on the neutral page |
+| `PANEL_BASE_URL` | panel | yes | public URL of the panel (links in e-mails) |
+| `REDIRECT_BASE_URL` | panel | yes | the host every QR code encodes |
+| `SAFE_BROWSING_API_KEY` | panel | in prod | without it (dev only) destination URLs are not checked |
+| `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD` | panel | no | both or neither; every request must carry a valid Cloudflare Access JWT |
+| `SNAPSHOT_PATH` | redirect | yes | its directory must be writable |
+| `SYNC_INTERVAL` | redirect | no | default `10s`; must be under 1 minute |
+| `COUNTRY_HEADER` | redirect | no | header set by the edge proxy with the country (e.g. `CF-IPCountry`); IPs are never stored |
 
-## Estat respecte al PRD
+## Releases and deployment
 
-Fet: US-01 a US-07, RF-01 a RF-06 i RF-09 a RF-11.
+Every push to `main` runs the tests and publishes `fikua/qr-dinamics:latest` and `:sha-<commit>` to Docker Hub ([release.yml](.github/workflows/release.yml)). CodeQL and SonarQube Cloud analyse every push and pull request.
 
-Pendent:
-- US-08, US-09, RF-07 i RF-08: Stripe i els correus de facturació.
-- US-10: exportació i esborrat RGPD.
-- RF-12: vista d'administració per bloquejar QR o comptes.
-- Regla de degradació en acabar la subscripció (depèn de Stripe).
-- Correu SMTP per a prod: el panell es nega a arrencar amb `APP_ENV=prod` fins que existeixi.
-- Interfície en castellà (ara només en català).
-- Limitació d'intents de login.
-- Decisions obertes del PRD que afecten el codi: la quota gratuïta (ara 3) i el que es mostra quan un QR està pausat (ara, la pàgina neutra).
+Deployment configuration lives in `fikua-platform-iac/projects/qr-dinamics/`: redirect at `https://qr.fikua.com`, panel at `https://qr-app.fikua.com` (closed beta behind Cloudflare Access).
 
-## Llicència
+## Status
 
-Codi font visible, no lliure: tots els drets reservats. Vegeu [LICENSE](LICENSE). Consultes: hola@fikua.com.
+Done: US-01 to US-07, RF-01 to RF-06 and RF-09 to RF-11 of the PRD.
+
+Pending:
+- US-08, US-09, RF-07, RF-08: Stripe billing and its e-mails.
+- US-10: GDPR export and deletion.
+- RF-12: admin view to block QR codes or accounts.
+- Downgrade rule when a subscription ends (depends on Stripe).
+- SMTP mailer for prod: the panel refuses to start with `APP_ENV=prod` until it exists.
+- Spanish user interface (Catalan only for now).
+- Login attempt limiting.
+- Open PRD decisions that affect the code: the free quota (3 for now) and what a paused QR shows (the neutral page for now).
+
+## License
+
+Source available, not open source: all rights reserved. See [LICENSE](LICENSE). Licensing enquiries: hola@fikua.com.

@@ -46,7 +46,7 @@ func NewVerifier(teamDomain, audience string) *Verifier {
 func (v *Verifier) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if err := v.Verify(r.Context(), r.Header.Get(header)); err != nil {
-			slog.Warn("cloudflare access check failed", "err", err, "path", r.URL.Path)
+			slog.Warn("cloudflare access check failed", "err", err)
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}

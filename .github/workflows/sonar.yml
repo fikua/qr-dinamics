@@ -35,6 +35,13 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Cache SonarQube packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4.3.0
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
       - name: Tests with coverage (unit + integration)
         env:
           TEST_DATABASE_URL: postgres://qr:qr@localhost:5432/qr_test?sslmode=disable
