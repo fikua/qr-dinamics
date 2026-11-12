@@ -1,0 +1,17 @@
+{{define "content"}}
+<section class="card narrow">
+  <h1>Crea un compte</h1>
+  <p class="muted">Gratis i sense targeta. Tindràs el primer QR en un parell de minuts.</p>
+  <form method="post" action="/register" class="stack">
+    <label>Correu electrònic
+      <input type="email" name="email" required autocomplete="email" value="{{with .Data}}{{.Email}}{{end}}">
+    </label>
+    <label>Contrasenya
+      <input type="password" name="password" required minlength="10" autocomplete="new-password">
+      <small class="muted">Almenys 10 caràcters.</small>
+    </label>
+    <button type="submit">Crea el compte</button>
+  </form>
+  <p>Ja tens compte? <a href="/login">Inicia la sessió</a></p>
+</section>
+{{end}}

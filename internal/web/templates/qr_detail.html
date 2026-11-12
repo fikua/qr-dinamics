@@ -1,0 +1,84 @@
+{{define "content"}}
+{{with .Data}}
+<p><a href="/qr">← Els meus QR</a></p>
+<div class="row between">
+  <h1>{{if .QR.Name}}{{.QR.Name}}{{else}}{{.QR.Code}}{{end}}</h1>
+  <span class="status {{.QR.Status}}">{{template "status" .QR.Status}}</span>
+</div>
+
+<div class="grid">
+  <section class="card qr">
+    <img src="/qr/{{.QR.ID}}/qr.svg?inline" alt="Codi QR de {{.ShortURL}}" width="220" height="220">
+    <p class="mono">{{.ShortURL}}</p>
+    <div class="row">
+      <a class="button" href="/qr/{{.QR.ID}}/qr.png">Descarrega PNG</a>
+      <a class="button secondary" href="/qr/{{.QR.ID}}/qr.svg">Descarrega SVG</a>
+    </div>
+    <small class="muted">El PNG fa més de 1.000 px; l'SVG s'escala sense perdre qualitat.</small>
+  </section>
+
+  <section class="card">
+    <h2>Destí</h2>
+    {{if eq .QR.Status "blocked"}}
+      <p>Aquest QR està bloquejat per l'administració i no es pot modificar.</p>
+    {{else}}
+    <form method="post" action="/qr/{{.QR.ID}}/destination" class="stack">
+      <label>URL de destí
+        <input type="url" name="destination" required value="{{.QR.Destination}}">
+      </label>
+      <button type="submit">Desa el destí</button>
+    </form>
+    <form method="post" action="/qr/{{.QR.ID}}/name" class="stack">
+      <label>Nom intern
+        <input type="text" name="name" maxlength="80" value="{{.QR.Name}}">
+      </label>
+      <button type="submit" class="secondary">Desa el nom</button>
+    </form>
+    {{end}}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Escanejos</h2>
+  <p><strong>{{.QR.TotalScans}}</strong> en total · <strong>{{.Last30}}</strong> els últims 30 dies</p>
+  {{$max := .MaxDay}}
+  <svg class="bars" viewBox="0 0 300 100" preserveAspectRatio="none" role="img" aria-label="Escanejos per dia dels últims 30 dies">
+    {{range $i, $d := .Days}}{{$h := pct $d.Count $max}}<rect x="{{mul $i 10}}" y="{{sub 100 $h}}" width="8" height="{{$h}}"><title>{{day $d.Day}}: {{$d.Count}}</title></rect>{{end}}
+  </svg>
+  <div class="row between muted"><small>fa 30 dies</small><small>avui</small></div>
+</section>
+
+<section class="card">
+  <h2>Historial de destins</h2>
+  <table class="list">
+    <thead><tr><th>Data</th><th>Destí</th></tr></thead>
+    <tbody>
+    {{range .History}}
+      <tr><td>{{datetime .ChangedAt}}</td><td class="url">{{.Destination}}{{if .Initial}} <span class="muted">(inicial)</span>{{end}}</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+</section>
+
+{{if ne .QR.Status "blocked"}}
+<section class="card">
+  <h2>Pausar o esborrar</h2>
+  <div class="row">
+    {{if eq .QR.Status "active"}}
+    <form method="post" action="/qr/{{.QR.ID}}/pause"><button type="submit" class="secondary">Pausa el QR</button></form>
+    {{else if eq .QR.Status "paused"}}
+    <form method="post" action="/qr/{{.QR.ID}}/resume"><button type="submit" class="secondary">Reactiva el QR</button></form>
+    {{end}}
+    <details class="danger-zone">
+      <summary>Esborra el QR</summary>
+      <p>Qui l'escanegi veurà una pàgina neutra. Allibera una plaça del teu pla. No es pot desfer.</p>
+      <form method="post" action="/qr/{{.QR.ID}}/delete"><button type="submit" class="danger">Esborra definitivament</button></form>
+    </details>
+  </div>
+  <small class="muted">Un QR pausat mostra una pàgina neutra fins que el reactivis.</small>
+</section>
+{{end}}
+{{end}}
+{{end}}
+
+{{define "status"}}{{if eq . "active"}}Actiu{{else if eq . "paused"}}Pausat{{else if eq . "blocked"}}Bloquejat{{else}}{{.}}{{end}}{{end}}

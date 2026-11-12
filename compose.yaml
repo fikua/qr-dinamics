@@ -1,0 +1,45 @@
+# Local development stack: Postgres, panel (:8080) and redirect (:8081).
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: qr
+      POSTGRES_PASSWORD: qr
+      POSTGRES_DB: qr
+    ports: ["127.0.0.1:5433:5432"]
+    volumes: [db:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qr"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  panel:
+    build: .
+    image: qr-dinamics:dev
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: postgres://qr:qr@db:5432/qr?sslmode=disable
+      PANEL_BASE_URL: http://localhost:8080
+      REDIRECT_BASE_URL: http://localhost:8081
+      ABUSE_EMAIL: abus@example.com
+      SAFE_BROWSING_API_KEY: ${SAFE_BROWSING_API_KEY:-}
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on: { db: { condition: service_healthy } }
+
+  redirect:
+    image: qr-dinamics:dev
+    entrypoint: ["/redirect"]
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: postgres://qr:qr@db:5432/qr?sslmode=disable
+      SNAPSHOT_PATH: /data/snapshot.json
+      SYNC_INTERVAL: 5s
+      ABUSE_EMAIL: abus@example.com
+    ports: ["127.0.0.1:8081:8081"]
+    volumes: [redirect:/data]
+    # No depends_on on db on purpose: the redirect must start without it.
+
+volumes:
+  db:
+  redirect:

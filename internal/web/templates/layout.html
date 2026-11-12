@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}} · QR dinàmics</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/qr">QR dinàmics</a>
+  {{if .Email}}
+  <nav>
+    <span class="who">{{.Email}}</span>
+    <form method="post" action="/logout"><button class="link" type="submit">Surt</button></form>
+  </nav>
+  {{end}}
+</header>
+<main>
+  {{if .Error}}<p class="alert error" role="alert">{{.Error}}</p>{{end}}
+  {{if .Notice}}<p class="alert notice" role="status">{{.Notice}}</p>{{end}}
+  {{template "content" .}}
+</main>
+</body>
+</html>

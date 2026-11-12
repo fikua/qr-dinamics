@@ -1,0 +1,15 @@
+{{define "content"}}
+<section class="card narrow">
+  <h1>Inicia la sessió</h1>
+  <form method="post" action="/login" class="stack">
+    <label>Correu electrònic
+      <input type="email" name="email" required autocomplete="email" value="{{with .Data}}{{.Email}}{{end}}">
+    </label>
+    <label>Contrasenya
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+    <button type="submit">Entra</button>
+  </form>
+  <p>No tens compte? <a href="/register">Crea'n un</a></p>
+</section>
+{{end}}

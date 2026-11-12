@@ -1,0 +1,16 @@
+{{define "content"}}
+<section class="card narrow">
+  <p><a href="/qr">← Els meus QR</a></p>
+  <h1>Nou QR</h1>
+  <form method="post" action="/qr/new" class="stack">
+    <label>On ha de portar el QR?
+      <input type="url" name="destination" required placeholder="https://..." value="{{.Data.Destination}}" autofocus>
+      <small class="muted">El podràs canviar sempre que vulguis sense reimprimir el QR.</small>
+    </label>
+    <label>Nom intern <span class="muted">(opcional)</span>
+      <input type="text" name="name" maxlength="80" placeholder="Carta del restaurant" value="{{.Data.Name}}">
+    </label>
+    <button type="submit">Crea el QR</button>
+  </form>
+</section>
+{{end}}

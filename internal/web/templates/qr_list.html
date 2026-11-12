@@ -1,0 +1,45 @@
+{{define "content"}}
+{{with .Data}}
+{{if not .Verified}}
+<section class="card warn">
+  <h2>Confirma el teu correu</h2>
+  <p>T'hem enviat un enllaç de confirmació. Quan el confirmis podràs crear QR.</p>
+  <form method="post" action="/verify/resend"><button type="submit" class="secondary">Torna a enviar el correu</button></form>
+</section>
+{{end}}
+<div class="row between">
+  <h1>Els meus QR</h1>
+  {{if .Verified}}
+    {{if lt .Used .Quota}}<a class="button" href="/qr/new">Nou QR</a>
+    {{else}}<span class="muted">Límit del pla assolit</span>{{end}}
+  {{end}}
+</div>
+<p class="muted">{{.Used}} de {{.Quota}} QR del teu pla.</p>
+<form method="get" action="/qr" class="row search" role="search">
+  <input type="search" name="q" value="{{.Query}}" placeholder="Cerca per nom o URL" aria-label="Cerca per nom o URL">
+  <button type="submit" class="secondary">Cerca</button>
+</form>
+{{if .Items}}
+<table class="list">
+  <thead><tr><th>Nom</th><th>Destí</th><th class="num">Escanejos</th><th>Creat</th><th>Estat</th></tr></thead>
+  <tbody>
+  {{range .Items}}
+  <tr>
+    <td><a href="/qr/{{.ID}}">{{if .Name}}{{.Name}}{{else}}{{.Code}}{{end}}</a></td>
+    <td class="url">{{.Destination}}</td>
+    <td class="num">{{.TotalScans}}</td>
+    <td>{{date .CreatedAt}}</td>
+    <td><span class="status {{.Status}}">{{template "status" .Status}}</span></td>
+  </tr>
+  {{end}}
+  </tbody>
+</table>
+{{else if .Query}}
+<p>Cap QR coincideix amb «{{.Query}}».</p>
+{{else if .Verified}}
+<p>Encara no tens cap QR. <a href="/qr/new">Crea el primer</a>.</p>
+{{end}}
+{{end}}
+{{end}}
+
+{{define "status"}}{{if eq . "active"}}Actiu{{else if eq . "paused"}}Pausat{{else if eq . "blocked"}}Bloquejat{{else}}{{.}}{{end}}{{end}}
