@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR dinàmics · El QR imprès que pots canviar quan vulguis</title>
+<meta name="description" content="Crea un codi QR, imprimeix-lo i canvia on porta sempre que vulguis, sense reimprimir. Per a restaurants, botigues i cartells. Gratuït durant la beta.">
+<link rel="canonical" href="{{.PublicURL}}/">
+<meta property="og:title" content="QR dinàmics · El QR imprès que pots canviar quan vulguis">
+<meta property="og:description" content="Imprimeix el codi una vegada i canvia'n el destí des del mòbil. Sense reimprimir.">
+<meta property="og:url" content="{{.PublicURL}}/">
+<meta property="og:type" content="website">
+<link rel="icon" href="/brand/fikua-icon.svg" type="image/svg+xml">
+<link rel="preload" href="/brand/inter-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/brand/brand.css">
+<link rel="stylesheet" href="/landing/landing.css">
+</head>
+<body>
+<a class="skip" href="#content">Salta al contingut</a>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/"><img src="/brand/fikua-icon.svg" alt="" width="28" height="28"> QR dinàmics</a>
+    <nav aria-label="Seccions">
+      <a href="#com-funciona">Com funciona</a>
+      <a href="#per-a-qui">Per a qui</a>
+      <a href="#preguntes">Preguntes</a>
+      {{if .SignupURL}}<a class="btn" href="{{.SignupURL}}">Crea el teu QR</a>{{else}}<a class="btn" href="{{.BetaMailto}}">Demana accés</a>{{end}}
+    </nav>
+  </div>
+</header>
+
+<main id="content">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-text">
+        <p class="eyebrow">Ara en beta</p>
+        <h1>El QR imprès que pots <span class="hl">canviar</span> quan vulguis.</h1>
+        <p class="lead">Imprimeix el codi una sola vegada. Quan canviï la carta, la promoció o la web, canvia on porta des del mòbil i el mateix QR enviarà els clients al lloc nou. Sense reimprimir res.</p>
+        <div class="actions">
+          {{if .SignupURL}}
+          <a class="btn highlight big" href="{{.SignupURL}}">Crea el teu QR gratis</a>
+          {{else}}
+          <a class="btn highlight big" href="{{.BetaMailto}}">Demana accés a la beta</a>
+          {{end}}
+          <a class="btn secondary big" href="#com-funciona">Com funciona</a>
+        </div>
+        <p class="fine">Gratuït durant la beta. Sense targeta. Només et demanem el correu.</p>
+      </div>
+
+      <figure class="demo" aria-labelledby="demo-caption">
+        <div class="sticker">
+          <img src="/landing/qr.svg" alt="Codi QR d'exemple: porta a aquesta pàgina" width="180" height="180">
+          <span>Escaneja'm</span>
+        </div>
+        <ol class="timeline">
+          <li class="old"><span class="when">Juny</span><span class="what">carta-estiu.pdf</span></li>
+          <li class="new"><span class="when">Novembre</span><span class="what">carta-hivern.pdf</span></li>
+        </ol>
+        <figcaption id="demo-caption">El mateix codi imprès, un destí nou. El canvi s'aplica en menys d'un minut.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="com-funciona" class="section">
+    <div class="wrap">
+      <h2>Com funciona</h2>
+      <ol class="steps">
+        <li>
+          <span class="n" aria-hidden="true">1</span>
+          <h3>Crea el codi</h3>
+          <p>Enganxa l'adreça on ha de portar: la carta en PDF, la teva web, un formulari, una galeria de fotos.</p>
+        </li>
+        <li>
+          <span class="n" aria-hidden="true">2</span>
+          <h3>Imprimeix-lo</h3>
+          <p>Descarrega'l en PNG d'alta resolució o en SVG vectorial i posa'l a la taula, a l'aparador o al cartell.</p>
+        </li>
+        <li>
+          <span class="n" aria-hidden="true">3</span>
+          <h3>Canvia el destí quan vulguis</h3>
+          <p>Des del panell, en un minut. El codi imprès no canvia: canvia on porta.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="per-a-qui" class="section alt">
+    <div class="wrap">
+      <h2>Per a qui</h2>
+      <div class="cards">
+        <article class="card c1">
+          <h3>Restaurants i bars</h3>
+          <p>Un sol QR a cada taula per a la carta. Quan canvies de temporada o de menú del dia, actualitzes l'enllaç i ja està.</p>
+        </article>
+        <article class="card c2">
+          <h3>Botigues</h3>
+          <p>El codi de l'aparador porta a la promoció d'aquesta setmana. Quan s'acaba, el canvies per la següent.</p>
+        </article>
+        <article class="card c3">
+          <h3>Cartells i esdeveniments</h3>
+          <p>Abans de l'acte porta a les entrades; després, a les fotos. Els cartells que ja has penjat continuen servint.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>Què inclou</h2>
+      <ul class="features">
+        <li><strong>Canvis en menys d'un minut.</strong> Desa el destí nou i el següent escaneig ja hi porta.</li>
+        <li><strong>Codis llestos per imprimir.</strong> PNG de més de 1.000 px i SVG vectorial, amb correcció d'errors alta perquè es llegeixin encara que estiguin una mica gastats.</li>
+        <li><strong>Saps si es fa servir.</strong> Escanejos per dia dels últims 30 dies, per a cada codi.</li>
+        <li><strong>Sense rastrejar ningú.</strong> Qui escaneja va directe al destí, sense pàgines intermèdies ni cookies nostres, i no guardem la seva adreça IP.</li>
+        <li><strong>Pausa'l quan no toqui.</strong> Un codi pausat mostra una pàgina neutra fins que el tornis a activar.</li>
+        <li><strong>Historial de destins.</strong> Saps on ha portat cada codi i des de quan.</li>
+        <li><strong>Redirecció independent del panell.</strong> Si el panell s'atura per manteniment, els codis impresos continuen redirigint.</li>
+        <li><strong>Les teves dades, a Europa i teves.</strong> Servidors a França. Pots descarregar-les o esborrar-les quan vulguis.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="preguntes" class="section alt">
+    <div class="wrap narrow">
+      <h2>Preguntes</h2>
+      <details>
+        <summary>Quant costa?</summary>
+        <p>Durant la beta és gratuït i no demanem targeta. Si més endavant hi ha plans de pagament, t'ho direm abans i podràs decidir; mai no et cobrarem res sense que ho hagis acceptat.</p>
+      </details>
+      <details>
+        <summary>Quina diferència hi ha amb un QR normal?</summary>
+        <p>Un QR normal porta l'adreça de destí escrita dins: si l'adreça canvia, cal imprimir-ne un de nou. El nostre porta una adreça curta fixa ({{.PublicURL}}/…) que redirigeix al destí que tu triïs, i aquest destí el pots canviar.</p>
+      </details>
+      <details>
+        <summary>Els codis caduquen?</summary>
+        <p>No tenen data de caducitat: mentre el teu compte existeixi i el codi estigui actiu, redirigeix. Si mai tanquéssim el servei, t'avisaríem amb antelació.</p>
+      </details>
+      <details>
+        <summary>Quantes dades recolliu de qui escaneja?</summary>
+        <p>Només la data, el país i el tipus de dispositiu (mòbil, tauleta o ordinador), per a les estadístiques. No posem cookies ni guardem l'adreça IP. Ho detallem a la <a href="/legal/privacitat">política de privacitat</a>.</p>
+      </details>
+      <details>
+        <summary>Puc fer servir el meu propi domini o posar el meu logo al QR?</summary>
+        <p>Encara no. Ara mateix els codis són en blanc i negre i fan servir el domini del servei.</p>
+      </details>
+      <details>
+        <summary>Quins tipus de contingut puc enllaçar?</summary>
+        <p>Qualsevol adreça web (http o https): un PDF, una pàgina, un formulari, un perfil. No admetem contingut il·legal ni enganyós; vegeu els <a href="/legal/termes">termes</a>.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="section cta">
+    <div class="wrap narrow center">
+      <h2>Prova-ho amb el teu proper cartell.</h2>
+      <p>Crea el codi en un parell de minuts. Si un dia canvies d'idea, no hauràs de reimprimir.</p>
+      {{if .SignupURL}}
+      <a class="btn highlight big" href="{{.SignupURL}}">Crea el teu QR gratis</a>
+      {{else}}
+      <a class="btn highlight big" href="{{.BetaMailto}}">Demana accés a la beta</a>
+      <p class="fine">La beta és tancada: t'hi donarem accés personalment.</p>
+      {{end}}
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="inner">
+    <span>QR dinàmics · un producte de <a href="https://fikua.com">Fikua</a></span>
+    <nav aria-label="Textos legals">
+      <a href="/legal/avis-legal">Avís legal</a>
+      <a href="/legal/privacitat">Privacitat</a>
+      <a href="/legal/termes">Termes</a>
+      <a href="/legal/cookies">Cookies</a>
+      <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,4 +1,4 @@
-package web
+package brand
 
 import (
 	"math"
@@ -7,16 +7,12 @@ import (
 	"testing"
 )
 
-// TestPaletteMeetsWCAG checks the colour tokens of app.css in light and dark
-// mode against WCAG 2.1 AA: 4.5:1 for text, 3:1 for component boundaries.
+// TestPaletteMeetsWCAG checks the colour tokens of brand.css against WCAG 2.1
+// AA: 4.5:1 for text, 3:1 for component boundaries.
 func TestPaletteMeetsWCAG(t *testing.T) {
-	css, err := staticFS.ReadFile("static/app.css")
-	if err != nil {
-		t.Fatal(err)
-	}
-	blocks := regexp.MustCompile(`:root\s*\{([^}]*)\}`).FindAllSubmatch(css, 2)
-	if len(blocks) != 2 {
-		t.Fatalf("want a light and a dark :root block, found %d", len(blocks))
+	blocks := regexp.MustCompile(`:root\s*\{([^}]*)\}`).FindAllSubmatch(CSS(), -1)
+	if len(blocks) != 1 {
+		t.Fatalf("want exactly one :root block (light only), found %d", len(blocks))
 	}
 	pairs := []struct {
 		fg, bg string
@@ -24,13 +20,14 @@ func TestPaletteMeetsWCAG(t *testing.T) {
 	}{
 		{"text", "bg", 4.5}, {"text", "surface", 4.5}, {"text", "warn-bg", 4.5},
 		{"muted", "bg", 4.5}, {"muted", "surface", 4.5}, {"muted", "warn-bg", 4.5},
-		{"accent", "bg", 4.5}, {"accent", "surface", 4.5}, {"accent-text", "accent", 4.5},
-		{"danger", "bg", 4.5}, {"danger", "surface", 4.5}, {"danger-text", "danger", 4.5},
+		{"accent", "bg", 4.5}, {"accent", "surface", 4.5}, {"accent", "bg-alt", 4.5}, {"muted", "bg-alt", 4.5},
+		{"danger", "bg", 4.5}, {"danger", "surface", 4.5}, {"on-danger", "danger", 4.5},
+		{"on-accent", "accent", 4.5}, {"on-accent", "highlight", 4.5}, {"highlight", "surface", 4.5},
 		{"ok", "bg", 4.5}, {"ok", "surface", 4.5},
 		{"input-border", "bg", 3}, {"input-border", "surface", 3},
 	}
 	token := regexp.MustCompile(`--([\w-]+):\s*(#[0-9a-fA-F]{6})`)
-	for i, mode := range []string{"light", "dark"} {
+	for i, mode := range []string{"light"} {
 		tokens := map[string]string{}
 		for _, m := range token.FindAllSubmatch(blocks[i][1], -1) {
 			tokens[string(m[1])] = string(m[2])

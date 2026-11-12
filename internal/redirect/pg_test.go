@@ -66,11 +66,6 @@ func TestPostgresSourceSinkAndRun(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("health = %d, want 200", w.Code)
 	}
-	w = httptest.NewRecorder()
-	mux.ServeHTTP(w, httptest.NewRequest("GET", "/", nil))
-	if w.Code != http.StatusOK || w.Header().Get("Set-Cookie") != "" {
-		t.Fatalf("home = %d", w.Code)
-	}
 }
 
 func TestRunReportsErrors(t *testing.T) {

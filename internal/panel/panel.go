@@ -9,6 +9,7 @@ import (
 
 	"qrdinamics/internal/access"
 	"qrdinamics/internal/accounts"
+	"qrdinamics/internal/brand"
 	"qrdinamics/internal/config"
 	"qrdinamics/internal/legal"
 	"qrdinamics/internal/mail"
@@ -55,6 +56,7 @@ func New(cfg config.Panel, d Deps) (*Panel, error) {
 
 	mux := http.NewServeMux()
 	mux.Handle("GET /static/", web.Static())
+	brand.Routes(mux)
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/qr", http.StatusSeeOther)
 	})

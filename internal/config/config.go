@@ -46,6 +46,7 @@ type Redirect struct {
 	ContactEmail  string
 	PanelBaseURL  string // linked from the legal pages
 	PublicBaseURL string // this service's public URL (what every QR encodes)
+	SignupURL     string // landing call to action; empty while the beta is closed (asks for access by e-mail)
 	Legal         LegalHolder
 }
 
@@ -109,6 +110,7 @@ func LoadRedirect() (Redirect, error) {
 		ContactEmail:  r.required("CONTACT_EMAIL"),
 		PanelBaseURL:  r.url("PANEL_BASE_URL"),
 		PublicBaseURL: r.url("REDIRECT_BASE_URL"),
+		SignupURL:     r.optionalURL("SIGNUP_URL"),
 		Legal:         r.legal(),
 	}
 	if c.SyncInterval >= time.Minute {
@@ -153,6 +155,13 @@ func (r *reader) url(key string) string {
 		r.errs = append(r.errs, fmt.Errorf("%s must be an absolute http(s) URL, got %q", key, v))
 	}
 	return v
+}
+
+func (r *reader) optionalURL(key string) string {
+	if strings.TrimSpace(os.Getenv(key)) == "" {
+		return ""
+	}
+	return r.url(key)
 }
 
 func (r *reader) duration(key string, def time.Duration) time.Duration {

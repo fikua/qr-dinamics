@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500" fill="none" role="img" aria-label="Fikua">
+  <g>
+      <line x1="250.00" y1="198.00" x2="250.00" y2="40.00" stroke="#E1241A" stroke-width="32" stroke-linecap="round"/>
+      <line x1="295.03" y1="224.00" x2="431.87" y2="145.00" stroke="#F6C915" stroke-width="32" stroke-linecap="round"/>
+      <line x1="295.03" y1="276.00" x2="431.87" y2="355.00" stroke="#1A1A1A" stroke-width="32" stroke-linecap="round"/>
+      <line x1="250.00" y1="302.00" x2="250.00" y2="460.00" stroke="#1A4C9C" stroke-width="32" stroke-linecap="round"/>
+      <line x1="204.97" y1="276.00" x2="68.13" y2="355.00" stroke="#F6C915" stroke-width="32" stroke-linecap="round"/>
+      <line x1="204.97" y1="224.00" x2="68.13" y2="145.00" stroke="#1A1A1A" stroke-width="32" stroke-linecap="round"/>
+  </g>
+</svg>

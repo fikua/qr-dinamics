@@ -16,7 +16,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"qrdinamics/internal/brand"
 	"qrdinamics/internal/config"
+	"qrdinamics/internal/landing"
 	"qrdinamics/internal/legal"
 	"qrdinamics/internal/redirect"
 )
@@ -66,6 +68,13 @@ func run() error {
 		return err
 	}
 
+	landingPage, err := landing.NewHandler(landing.Info{
+		PublicURL: cfg.PublicBaseURL, SignupURL: cfg.SignupURL, ContactEmail: cfg.ContactEmail,
+	})
+	if err != nil {
+		return err
+	}
+
 	logErr := func(op string, err error) { slog.Error(op, "err", err) }
 	syncer := &redirect.Syncer{
 		Table: table, Source: redirect.PGSource{DB: pool},
@@ -79,6 +88,8 @@ func run() error {
 	wg.Go(func() { recorder.Run(bg) })
 
 	mux := http.NewServeMux()
+	brand.Routes(mux)
+	landingPage.Routes(mux)
 	legalPages.Routes(mux)
 	(&redirect.Handler{
 		Table: table, Recorder: recorder, CountryHeader: cfg.CountryHeader,

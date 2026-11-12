@@ -4,12 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{.Title}} · QR dinàmics</title>
+<link rel="icon" href="/brand/fikua-icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/brand/brand.css">
 <link rel="stylesheet" href="/static/app.css">
 </head>
 <body>
 <a class="skip" href="#content">Salta al contingut</a>
 <header class="top">
-  <a class="brand" href="/qr">QR dinàmics</a>
+  <a class="brand" href="/qr"><img src="/brand/fikua-icon.svg" alt="" width="28" height="28"> QR dinàmics</a>
   {{if .Email}}
   <nav>
     <a href="/qr">Els meus QR</a>
@@ -24,15 +26,18 @@
   {{if .Notice}}<p class="alert notice" role="status">{{.Notice}}</p>{{end}}
   {{template "content" .}}
 </main>
-<footer class="site">
-  <nav aria-label="Textos legals">
-    <a href="/legal/avis-legal">Avís legal</a>
-    <a href="/legal/privacitat">Privacitat</a>
-    <a href="/legal/termes">Termes</a>
-    <a href="/legal/cookies">Cookies</a>
-    <a href="/legal/llicencies">Llicències</a>
-    <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>
-  </nav>
+<footer class="site-footer">
+  <div class="inner">
+    <span>QR dinàmics · un producte de Fikua</span>
+    <nav aria-label="Textos legals">
+      <a href="/legal/avis-legal">Avís legal</a>
+      <a href="/legal/privacitat">Privacitat</a>
+      <a href="/legal/termes">Termes</a>
+      <a href="/legal/cookies">Cookies</a>
+      <a href="/legal/llicencies">Llicències</a>
+      <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>
+    </nav>
+  </div>
 </footer>
 </body>
 </html>

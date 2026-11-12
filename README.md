@@ -9,9 +9,9 @@ Two Go binaries, one Docker image, and Postgres:
 | Binary | Port | What it does |
 | --- | --- | --- |
 | `/panel` (`cmd/panel`) | 8080 | Owner's panel (server-rendered HTML): sign-up, QR codes, scan statistics. Applies the database migrations. Can be restricted to Cloudflare Access. |
-| `/redirect` (`cmd/redirect`) | 8081 | `GET /{code}` → 302 to the current destination. Answers from an in-memory table synced every `SYNC_INTERVAL` and saved to a local snapshot, so it starts and answers while the database is down. Records scans in batches, off the request path. |
+| `/redirect` (`cmd/redirect`) | 8081 | Public host: the product landing page at `/`, the legal pages, and `GET /{code}` → 302 to the current destination. Answers from an in-memory table synced every `SYNC_INTERVAL` and saved to a local snapshot, so it starts and answers while the database is down. Records scans in batches, off the request path. |
 
-Code is organized by domain: `internal/accounts`, `internal/qrcodes`, `internal/redirect`, `internal/privacy` (export, erasure, retention), `internal/legal` (legal pages), `internal/safety`, `internal/access` and `internal/web`; `internal/panel` assembles the panel.
+Code is organized by domain: `internal/accounts`, `internal/qrcodes`, `internal/redirect`, `internal/privacy` (export, erasure, retention), `internal/legal` (legal pages), `internal/landing` (public landing page), `internal/brand` (Fikua look and feel: tokens, self-hosted Inter font, icon; light palette only), `internal/safety`, `internal/access` and `internal/web`; `internal/panel` assembles the panel.
 
 ## Development
 
@@ -40,6 +40,7 @@ The panel's user interface is in Catalan; code, comments and documentation are i
 | `LEGAL_HOLDER_NAME`, `LEGAL_HOLDER_TAX_ID`, `LEGAL_HOLDER_ADDRESS` | both | before going public | service provider in the legal notice (LSSI art. 10); a prod panel without Cloudflare Access refuses to start without them |
 | `SAFE_BROWSING_API_KEY` | panel | in prod | without it (dev only) destination URLs are not checked |
 | `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD` | panel | no | both or neither; every request must carry a valid Cloudflare Access JWT |
+| `SIGNUP_URL` | redirect | no | landing call to action; empty while the beta is closed (the button asks for access by e-mail) |
 | `SNAPSHOT_PATH` | redirect | yes | its directory must be writable |
 | `SYNC_INTERVAL` | redirect | no | default `10s`; must be under 1 minute |
 | `COUNTRY_HEADER` | redirect | no | header set by the edge proxy with the country (e.g. `CF-IPCountry`); IPs are never stored |
@@ -54,10 +55,11 @@ What the code guarantees, and where:
 | Terms accepted explicitly, marketing consent separate | unticked checkboxes at sign-up; every decision is stored with its version and time in `consents` |
 | Data export and erasure (GDPR arts. 15, 17, 20) | `/compte`: JSON of everything, CSV of QR codes, account deletion (password + typed confirmation) |
 | Retention | `internal/privacy`: scans 24 months, unverified accounts 30 days, expired sessions and tokens; purged daily. Tested against the numbers the privacy policy shows |
+| Landing claims | `TestNoUnbackedClaims` rejects permanence promises, uptime figures, ratings and urgency wording |
 | No trackers | one first-party, strictly necessary session cookie; no analytics, so no consent banner. Adding any tracker requires a banner that blocks it until accepted |
 | E-mails | transactional only, with a footer saying why they are sent; marketing e-mails will need a one-click unsubscribe link and `List-Unsubscribe` |
-| Accessibility (WCAG 2.1 AA) | colour tokens checked by `TestPaletteMeetsWCAG`; skip link, visible focus, labelled form controls, alt text on the QR image, keyboard-only operable |
-| Open-source licences | `make licenses` regenerates `internal/legal/third_party_licenses.txt` (all permissive: MIT, BSD-3-Clause, Apache-2.0); CI fails if it is out of date |
+| Accessibility (WCAG 2.1 AA) | brand colour tokens checked by `TestPaletteMeetsWCAG` (`internal/brand`); skip link, visible focus, labelled form controls, alt text on the QR image, keyboard-only operable |
+| Open-source licences | Inter font (SIL OFL 1.1) self-hosted, licence shown on `/legal/llicencies`; `make licenses` regenerates `internal/legal/third_party_licenses.txt` (all permissive: MIT, BSD-3-Clause, Apache-2.0); CI fails if it is out of date |
 
 The legal texts are a starting point written without legal advice; have them reviewed before opening the panel to the public.
 

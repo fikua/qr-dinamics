@@ -6,11 +6,12 @@ package legal
 import (
 	"bytes"
 	"embed"
-	_ "embed"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"time"
+
+	"qrdinamics/internal/brand"
 )
 
 // Version is the version of the terms and privacy policy. Keep it equal to
@@ -84,6 +85,7 @@ type pageData struct {
 	Version            string
 	Retention          map[string]int
 	ThirdPartyLicenses string
+	FontLicense        string
 	Year               int
 }
 
@@ -133,6 +135,7 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request) {
 			"SessionDays": SessionDays, "BackupDays": BackupDays,
 		},
 		ThirdPartyLicenses: thirdPartyLicenses,
+		FontLicense:        brand.FontLicense(),
 		Year:               time.Now().Year(),
 	}
 	var buf bytes.Buffer
@@ -142,7 +145,7 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'self'; frame-ancestors 'none'")
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; frame-ancestors 'none'")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	buf.WriteTo(w)
 }

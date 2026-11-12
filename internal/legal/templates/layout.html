@@ -4,11 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{.Page.Title}} · QR dinàmics</title>
+<link rel="icon" href="/brand/fikua-icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/brand/brand.css">
 <link rel="stylesheet" href="/legal/legal.css">
 </head>
 <body>
 <a class="skip" href="#content">Salta al contingut</a>
-<main id="content">
+<main id="content" class="page">
+<header><a class="brand" href="/"><img src="/brand/fikua-icon.svg" alt="" width="28" height="28"> QR dinàmics</a></header>
 <nav class="legal" aria-label="Textos legals">
 {{range .Pages}}<a href="/legal/{{.Slug}}"{{if eq .Slug $.Page.Slug}} aria-current="page"{{end}}>{{.Title}}</a>{{end}}
 </nav>
@@ -18,7 +21,7 @@
 {{template "body" .}}
 </article>
 </main>
-<footer>QR dinàmics · Contacte: <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a></footer>
+<footer class="site-footer"><div class="inner"><span>QR dinàmics · un producte de Fikua</span><a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a></div></footer>
 </body>
 </html>
 

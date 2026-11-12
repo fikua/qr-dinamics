@@ -10,7 +10,7 @@
 <div class="row between">
   <h1>Els meus QR</h1>
   {{if .Verified}}
-    {{if lt .Used .Quota}}<a class="button" href="/qr/new">Nou QR</a>
+    {{if lt .Used .Quota}}<a class="btn" href="/qr/new">Nou QR</a>
     {{else}}<span class="muted">Límit del pla assolit</span>{{end}}
   {{end}}
 </div>

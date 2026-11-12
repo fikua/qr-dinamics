@@ -44,7 +44,7 @@ func TestPagesRender(t *testing.T) {
 	if code, _, h := serve(t, info, "/legal/"); code != http.StatusSeeOther || h.Get("Location") != "/legal/avis-legal" {
 		t.Fatalf("/legal/: %d %q", code, h.Get("Location"))
 	}
-	if code, body, _ := serve(t, info, "/legal/legal.css"); code != http.StatusOK || !strings.Contains(body, ":root") {
+	if code, body, _ := serve(t, info, "/legal/legal.css"); code != http.StatusOK || !strings.Contains(body, "article") {
 		t.Fatal("css")
 	}
 }
@@ -82,6 +82,10 @@ func TestPublishedFactsMatchCode(t *testing.T) {
 	}
 	if got := time.Duration(UnverifiedAccountDays) * 24 * time.Hour; got != privacy.UnverifiedRetention {
 		t.Fatalf("unverified accounts: page says %v, code %v", got, privacy.UnverifiedRetention)
+	}
+	_, body, _ := serve(t, Info{}, "/legal/llicencies")
+	if !strings.Contains(body, "SIL Open Font License") {
+		t.Fatal("the Inter font licence must be shown")
 	}
 	if !strings.Contains(thirdPartyLicenses, "github.com/jackc/pgx/v5") || !strings.Contains(thirdPartyLicenses, "Apache License") {
 		t.Fatal("third-party licences file looks incomplete; run make licenses")
