@@ -1,0 +1,46 @@
+name: SonarQube Cloud
+
+# Needs the SONAR_TOKEN repo secret and the project fikua_qr-dinamics on
+# sonarcloud.io (organization fikua), with Automatic Analysis turned off.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: qr
+          POSTGRES_PASSWORD: qr
+          POSTGRES_DB: qr_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U qr" --health-interval 2s --health-timeout 3s --health-retries 20
+    steps:
+      - name: Checkout (full history, for new-code detection)
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Tests with coverage (unit + integration)
+        env:
+          TEST_DATABASE_URL: postgres://qr:qr@localhost:5432/qr_test?sslmode=disable
+        run: go test -p 1 -count=1 -coverprofile=coverage.out -json ./... > test-report.json
+
+      - name: SonarQube Cloud scan
+        uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65  # v8.4.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

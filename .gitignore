@@ -2,3 +2,5 @@ bin/
 *.out
 .env
 snapshot.json
+coverage.out
+test-report.json

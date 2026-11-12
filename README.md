@@ -2,8 +2,6 @@
 
 QR dinàmics per a petits negocis: crea un QR, imprimeix-lo i canvia'n el destí quan vulguis. El QR no deixa de funcionar mai, ni si el panell o la base de dades cauen.
 
-Especificació: PRD «QR dinàmics» (claude.ai/artifact/XMyh9vxJtu8XaDwkabHNsC).
-
 ## Arquitectura
 
 Dos binaris Go i un Postgres:
@@ -16,6 +14,8 @@ Dos binaris Go i un Postgres:
 Organització per domini: `internal/accounts`, `internal/qrcodes`, `internal/redirect`, `internal/safety` i `internal/web`.
 
 ## Desenvolupament
+
+Abans del primer commit: `pre-commit install` (gitleaks bloqueja els commits amb secrets).
 
 ```sh
 make up                # Postgres + panell (http://localhost:8080) + redirecció (http://localhost:8081)
@@ -53,3 +53,7 @@ Pendent:
 - Interfície en castellà (ara només en català).
 - Limitació d'intents de login.
 - Decisions obertes del PRD que afecten el codi: la quota gratuïta (ara 3) i el que es mostra quan un QR està pausat (ara, la pàgina neutra).
+
+## Llicència
+
+Codi font visible, no lliure: tots els drets reservats. Vegeu [LICENSE](LICENSE). Consultes: hola@fikua.com.

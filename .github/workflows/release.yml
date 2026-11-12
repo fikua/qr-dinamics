@@ -11,9 +11,6 @@ on:
       - '**.md'
   workflow_dispatch:
 
-# Private repo: the org's Docker Hub secrets are not visible here, so
-# DOCKER_USERNAME and DOCKER_TOKEN must be repo secrets.
-
 env:
   IMAGE_NAME: fikua/qr-dinamics
 
