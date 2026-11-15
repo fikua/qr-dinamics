@@ -1,15 +1,15 @@
 {{define "content"}}
 <section class="card narrow">
-  <h1>Inicia la sessió</h1>
+  <h1>{{t "Inicia la sessió"}}</h1>
   <form method="post" action="/login" class="stack">
-    <label>Correu electrònic
+    <label>{{t "Correu electrònic"}}
       <input type="email" name="email" required autocomplete="email" value="{{with .Data}}{{.Email}}{{end}}">
     </label>
-    <label>Contrasenya
+    <label>{{t "Contrasenya"}}
       <input type="password" name="password" required autocomplete="current-password">
     </label>
-    <button type="submit">Entra</button>
+    <button type="submit">{{t "Entra"}}</button>
   </form>
-  <p>No tens compte? <a href="/register">Crea'n un</a></p>
+  <p>{{t "No tens compte?"}} <a href="/register">{{t "Crea'n un"}}</a></p>
 </section>
 {{end}}

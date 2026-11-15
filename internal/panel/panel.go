@@ -11,6 +11,7 @@ import (
 	"qrdinamics/internal/accounts"
 	"qrdinamics/internal/brand"
 	"qrdinamics/internal/config"
+	"qrdinamics/internal/i18n"
 	"qrdinamics/internal/legal"
 	"qrdinamics/internal/mail"
 	"qrdinamics/internal/privacy"
@@ -57,6 +58,7 @@ func New(cfg config.Panel, d Deps) (*Panel, error) {
 	mux := http.NewServeMux()
 	mux.Handle("GET /static/", web.Static())
 	brand.Routes(mux)
+	i18n.Routes(mux)
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/qr", http.StatusSeeOther)
 	})
@@ -73,7 +75,7 @@ func New(cfg config.Panel, d Deps) (*Panel, error) {
 	privacyHandler.Routes(mux, accountHandler.RequireAccount)
 
 	// CrossOriginProtection rejects cross-site POSTs (CSRF) using Sec-Fetch-Site / Origin.
-	handler := web.SecurityHeaders(http.NewCrossOriginProtection().Handler(mux))
+	handler := i18n.Middleware(web.SecurityHeaders(http.NewCrossOriginProtection().Handler(mux)))
 	if cfg.AccessTeamDomain != "" {
 		handler = access.NewVerifier(cfg.AccessTeamDomain, cfg.AccessAudience).Middleware(handler)
 	}

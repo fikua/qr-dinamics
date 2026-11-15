@@ -1,25 +1,25 @@
 {{define "content"}}
 <section class="card narrow">
-  <h1>Crea un compte</h1>
-  <p class="muted">Gratuït durant la beta i sense targeta. Només et demanem el correu i una contrasenya.</p>
+  <h1>{{t "Crea un compte"}}</h1>
+  <p class="muted">{{t "Gratuït durant la beta i sense targeta. Només et demanem el correu i una contrasenya."}}</p>
   <form method="post" action="/register" class="stack">
-    <label>Correu electrònic
+    <label>{{t "Correu electrònic"}}
       <input type="email" name="email" required autocomplete="email" value="{{with .Data}}{{.Email}}{{end}}">
     </label>
-    <label>Contrasenya
+    <label>{{t "Contrasenya"}}
       <input type="password" name="password" required minlength="10" autocomplete="new-password">
-      <small class="muted">Almenys 10 caràcters.</small>
+      <small class="muted">{{t "Almenys 10 caràcters."}}</small>
     </label>
     <label class="check">
       <input type="checkbox" name="accept_terms" required>
-      <span>Accepto els <a href="/legal/termes" target="_blank" rel="noopener">termes i condicions</a> i la <a href="/legal/privacitat" target="_blank" rel="noopener">política de privacitat</a>.</span>
+      <span>{{t "Accepto els"}} <a href="/legal/termes" target="_blank" rel="noopener">{{t "termes i condicions"}}</a> {{t "i la"}} <a href="/legal/privacitat" target="_blank" rel="noopener">{{t "política de privacitat"}}</a>.</span>
     </label>
     <label class="check">
       <input type="checkbox" name="marketing"{{with .Data}}{{if .Marketing}} checked{{end}}{{end}}>
-      <span>Vull rebre novetats del producte per correu (opcional; pots donar-te de baixa quan vulguis).</span>
+      <span>{{t "Vull rebre novetats del producte per correu (opcional; pots donar-te de baixa quan vulguis)."}}</span>
     </label>
-    <button type="submit">Crea el compte</button>
+    <button type="submit">{{t "Crea el compte"}}</button>
   </form>
-  <p>Ja tens compte? <a href="/login">Inicia la sessió</a></p>
+  <p>{{t "Ja tens compte?"}} <a href="/login">{{t "Inicia la sessió"}}</a></p>
 </section>
 {{end}}

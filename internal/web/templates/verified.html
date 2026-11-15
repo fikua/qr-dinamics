@@ -1,12 +1,12 @@
 {{define "content"}}
 <section class="card narrow">
   {{if .Error}}
-  <h1>Enllaç no vàlid</h1>
-  <p><a href="/login">Inicia la sessió</a></p>
+  <h1>{{t "Enllaç no vàlid"}}</h1>
+  <p><a href="/login">{{t "Inicia la sessió"}}</a></p>
   {{else}}
-  <h1>Correu confirmat</h1>
-  <p>Ja pots crear els teus QR.</p>
-  <p><a class="btn" href="/qr/new">Crea el primer QR</a></p>
+  <h1>{{t "Correu confirmat"}}</h1>
+  <p>{{t "Ja pots crear els teus QR."}}</p>
+  <p><a class="btn" href="/qr/new">{{t "Crea el primer QR"}}</a></p>
   {{end}}
 </section>
 {{end}}

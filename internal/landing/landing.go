@@ -13,6 +13,7 @@ import (
 	"net/url"
 
 	"qrdinamics/internal/brand"
+	"qrdinamics/internal/i18n"
 	"qrdinamics/internal/qrcodes"
 )
 
@@ -28,45 +29,54 @@ type Info struct {
 
 // Handler serves /, /landing/landing.css and /landing/qr.svg.
 type Handler struct {
-	page   []byte
+	pages  map[i18n.Lang][]byte // the page, rendered once per language
 	css    []byte
 	demoQR []byte
 }
 
 type pageData struct {
 	Info
+	Lang         i18n.Lang
 	BetaMailto   string
 	BrandV, CSSV string // asset versions for cache busting
 }
 
-// NewHandler renders the page once; it never changes at runtime.
+// NewHandler renders the page once per language; it never changes at runtime.
 func NewHandler(info Info) (*Handler, error) {
-	t, err := template.New("landing.html").Funcs(brand.TemplateFuncs()).ParseFS(files, "landing.html")
-	if err != nil {
-		return nil, err
-	}
-	mailto := fmt.Sprintf("mailto:%s?subject=%s&body=%s", info.ContactEmail,
-		url.PathEscape("Accés a la beta de QR dinàmics"),
-		url.PathEscape("Hola! M'agradaria provar QR dinàmics.\n\nNegoci:\nPer a què el faria servir:\n"))
 	css, err := files.ReadFile("landing.css")
 	if err != nil {
 		return nil, err
 	}
-	var buf bytes.Buffer
-	if err := t.Execute(&buf, pageData{Info: info, BetaMailto: mailto, BrandV: brand.Version, CSSV: brand.Hash(css)}); err != nil {
-		return nil, err
+	h := &Handler{pages: map[i18n.Lang][]byte{}, css: css}
+	for _, lang := range i18n.All {
+		t, err := template.New("landing.html").Funcs(brand.TemplateFuncs()).Funcs(i18n.Funcs(lang)).ParseFS(files, "landing.html")
+		if err != nil {
+			return nil, err
+		}
+		mailto := fmt.Sprintf("mailto:%s?subject=%s&body=%s", info.ContactEmail,
+			url.PathEscape(i18n.T(lang, "Accés a la beta de QR dinàmics")),
+			url.PathEscape(i18n.T(lang, "Hola! M'agradaria provar QR dinàmics.")+"\n\n"+i18n.T(lang, "Negoci:")+"\n"+i18n.T(lang, "Per a què el faria servir:")+"\n"))
+		var buf bytes.Buffer
+		if err := t.Execute(&buf, pageData{Info: info, Lang: lang, BetaMailto: mailto, BrandV: brand.Version, CSSV: brand.Hash(css)}); err != nil {
+			return nil, err
+		}
+		h.pages[lang] = buf.Bytes()
 	}
 	// A real, scannable code: it encodes the landing page itself.
-	demo, err := qrcodes.RenderSVG(info.PublicURL)
+	h.demoQR, err = qrcodes.RenderSVG(info.PublicURL)
 	if err != nil {
 		return nil, err
 	}
-	return &Handler{page: buf.Bytes(), css: css, demoQR: demo}, nil
+	return h, nil
 }
 
 // Routes registers the landing routes.
 func (h *Handler) Routes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /{$}", h.serve("text/html; charset=utf-8", h.page, "public, max-age=300"))
+	// The page depends on the visitor's language, so shared caches must not keep it.
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Vary", "Cookie, Accept-Language")
+		h.serve("text/html; charset=utf-8", h.pages[i18n.FromRequest(r)], "private, max-age=300")(w, r)
+	})
 	mux.HandleFunc("GET /landing/landing.css", h.serve("text/css; charset=utf-8", h.css, "public, max-age=3600"))
 	mux.HandleFunc("GET /landing/qr.svg", h.serve("image/svg+xml", h.demoQR, "public, max-age=86400"))
 }

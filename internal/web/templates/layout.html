@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ca">
+<html lang="{{.Lang.Locale}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,15 +10,15 @@
 </head>
 <body>
 {{emailOff}}
-<a class="skip" href="#content">Salta al contingut</a>
+<a class="skip" href="#content">{{t "Salta al contingut"}}</a>
 <header class="top">
-  <a class="brand" href="/qr"><img src="/brand/fikua-icon.svg" alt="" width="28" height="28"> QR dinàmics</a>
+  <a class="brand" href="/qr"><img src="/brand/fikua-icon.svg" alt="" width="28" height="28"> {{t "QR dinàmics"}}</a>
   {{if .Email}}
   <nav>
-    <a href="/qr">Els meus QR</a>
-    <a href="/compte">Compte</a>
+    <a href="/qr">{{t "Els meus QR"}}</a>
+    <a href="/compte">{{t "Compte"}}</a>
     <span class="who">{{.Email}}</span>
-    <form method="post" action="/logout"><button class="link" type="submit">Surt</button></form>
+    <form method="post" action="/logout"><button class="link" type="submit">{{t "Surt"}}</button></form>
   </nav>
   {{end}}
 </header>
@@ -29,15 +29,16 @@
 </main>
 <footer class="site-footer">
   <div class="inner">
-    <span>QR dinàmics · un producte de Fikua</span>
-    <nav aria-label="Textos legals">
-      <a href="/legal/avis-legal">Avís legal</a>
-      <a href="/legal/privacitat">Privacitat</a>
-      <a href="/legal/termes">Termes</a>
-      <a href="/legal/cookies">Cookies</a>
-      <a href="/legal/llicencies">Llicències</a>
+    <span>{{t "QR dinàmics · un producte de Fikua"}}</span>
+    <nav aria-label="{{t "Textos legals"}}">
+      <a href="/legal/avis-legal">{{t "Avís legal"}}</a>
+      <a href="/legal/privacitat">{{t "Privacitat"}}</a>
+      <a href="/legal/termes">{{t "Termes"}}</a>
+      <a href="/legal/cookies">{{t "Cookies"}}</a>
+      <a href="/legal/llicencies">{{t "Llicències"}}</a>
       <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>
     </nav>
+    <nav class="lang" aria-label="{{t "Idioma"}}">{{range langs}}<a href="/lang/{{.}}" lang="{{.}}" hreflang="{{.}}"{{if eq . $.Lang}} aria-current="true"{{end}}>{{.Name}}</a>{{end}}</nav>
   </div>
 </footer>
 {{emailOn}}

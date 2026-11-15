@@ -1,0 +1,54 @@
+{{define "body"}}
+<p>Esta política explica qué datos trata QR dinàmics, para qué, durante cuánto tiempo y qué derechos tienes. Está escrita para que se entienda; si tienes dudas, escribe a <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>Responsable del tratamiento</h2>
+{{template "holder" .}}
+<p>Contacto: <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>Qué datos tratamos</h2>
+<table>
+<thead><tr><th>Datos</th><th>Para qué</th><th>Base legal</th><th>Durante cuánto tiempo</th></tr></thead>
+<tbody>
+<tr><td>Correo electrónico y contraseña (solo guardamos el hash)</td><td>Crear y proteger tu cuenta, enviarte los correos del servicio</td><td>Ejecución del contrato (art. 6.1.b RGPD)</td><td>Mientras exista la cuenta. Si no confirmas el correo, lo borramos a los {{.Retention.UnverifiedDays}} días.</td></tr>
+<tr><td>Códigos QR: nombre interno, dirección de destino e historial de cambios</td><td>Prestar el servicio</td><td>Ejecución del contrato</td><td>Hasta que borres el código o la cuenta. El código corto se conserva sin ningún otro dato para que no se reutilice nunca.</td></tr>
+<tr><td>Escaneos: fecha y hora, país y tipo de dispositivo</td><td>Mostrarte las estadísticas de tus códigos</td><td>Ejecución del contrato</td><td>{{.Retention.ScanMonths}} meses; después se borran automáticamente.</td></tr>
+<tr><td>Registro de aceptación: qué versión de los términos y de la privacidad aceptaste, si quieres recibir novedades, y cuándo</td><td>Poder demostrar el consentimiento</td><td>Obligación legal e interés legítimo (art. 6.1.c y 6.1.f)</td><td>Mientras exista la cuenta.</td></tr>
+<tr><td>Cookie de sesión</td><td>Mantener la sesión iniciada</td><td>Necesaria para el servicio</td><td>{{.Retention.SessionDays}} días o hasta que cierres la sesión. Véase la <a href="/legal/cookies">política de cookies</a>.</td></tr>
+</tbody>
+</table>
+<p>Solo te pedimos el correo y una contraseña. No te pedimos nombre, teléfono, dirección ni tarjeta para registrarte.</p>
+<p>Las copias de seguridad de la base de datos se hacen cada día y se conservan {{.Retention.BackupDays}} días; un dato borrado puede permanecer en ellas hasta ese plazo.</p>
+
+<h2>Personas que escanean un código</h2>
+<p>Si escaneas un código QR del servicio, no te pedimos nada ni te ponemos cookies. Registramos la fecha, el país (deducido de la dirección IP por la red de Cloudflare) y el tipo de dispositivo (móvil, tableta u ordenador). La dirección IP no se guarda nunca. Estos datos no permiten identificarte.</p>
+
+<h2>Marketing</h2>
+<p>Solo te enviaremos novedades del producto si lo has aceptado expresamente, en una casilla aparte y desmarcada. Puedes retirar el consentimiento cuando quieras en la página de la cuenta o con el enlace de baja de cada correo de novedades. Los correos del servicio (confirmación, seguridad, facturación) no son publicidad y no tienen enlace de baja.</p>
+
+<h2>Proveedores que tratan datos</h2>
+<table>
+<thead><tr><th>Proveedor</th><th>Servicio</th><th>Dónde</th></tr></thead>
+<tbody>
+<tr><td>OVH SAS (OVHcloud)</td><td>Servidor donde se ejecuta el servicio, base de datos y copias de seguridad</td><td>Francia (UE)</td></tr>
+<tr><td>Cloudflare, Inc.</td><td>DNS, red de distribución y protección; control de acceso al panel durante la beta. Trata direcciones IP de forma transitoria.</td><td>Red global. Transferencias fuera de la UE amparadas por el Marco de Privacidad de Datos UE-EE. UU. y las cláusulas contractuales tipo.</td></tr>
+{{if .SafeBrowsingEnabled}}<tr><td>Google LLC (Safe Browsing)</td><td>Comprobar que las direcciones de destino no sean peligrosas. Solo se envía la dirección de destino.</td><td>EE. UU.; Marco de Privacidad de Datos UE-EE. UU.</td></tr>{{end}}
+</tbody>
+</table>
+<p>Cuando haya pagos y correo transaccional, añadiremos aquí sus proveedores antes de empezar a utilizarlos.</p>
+<p>No vendemos ni cedemos datos a terceros. No utilizamos analítica, publicidad ni rastreadores. No utilizamos inteligencia artificial con tus datos ni los utilizamos para entrenar modelos.</p>
+
+<h2>Tus derechos</h2>
+<p>Tienes derecho de acceso, rectificación, supresión, limitación, oposición y portabilidad, y a retirar el consentimiento. Desde la página <a href="{{.PanelURL}}/compte">Cuenta</a> puedes, sin escribirnos:</p>
+<ul>
+<li>descargar todos tus datos (JSON) y tus códigos (CSV);</li>
+<li>borrar la cuenta y todos los datos asociados;</li>
+<li>activar o retirar el consentimiento de marketing.</li>
+</ul>
+<p>Para cualquier otra petición, escribe a <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>; respondemos en un mes como máximo. Si crees que no hemos tratado bien tus datos, puedes reclamar ante la <a href="https://www.aepd.es">Agencia Española de Protección de Datos</a>.</p>
+
+<h2>Menores</h2>
+<p>El servicio es para negocios y profesionales mayores de edad. No está dirigido a menores y no recogemos datos suyos de forma consciente.</p>
+
+<h2>Cambios</h2>
+<p>Si cambiamos esta política de forma sustancial, te avisaremos por correo antes de que se aplique. La versión vigente está siempre en esta página.</p>
+{{end}}

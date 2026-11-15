@@ -36,7 +36,7 @@ func (h *Handler) Routes(mux *http.ServeMux, auth func(http.Handler) http.Handle
 	mux.Handle("GET /compte/qr.csv", auth(http.HandlerFunc(h.exportCSV)))
 	mux.Handle("POST /compte/esborra", auth(http.HandlerFunc(h.deleteAccount)))
 	mux.HandleFunc("GET /compte/esborrat", func(w http.ResponseWriter, r *http.Request) {
-		h.view.Render(w, http.StatusOK, "account_deleted", web.Page{Title: "Compte esborrat"})
+		h.view.Render(w, r, http.StatusOK, "account_deleted", web.Page{Title: "Compte esborrat"})
 	})
 }
 
@@ -72,7 +72,7 @@ func (h *Handler) render(w http.ResponseWriter, r *http.Request, status int, err
 		h.fail(w, "load consents", err)
 		return
 	}
-	h.view.Render(w, status, "account", web.Page{
+	h.view.Render(w, r, status, "account", web.Page{
 		Title: "El teu compte", Email: a.Email, Error: errMsg, Notice: notice,
 		Data: pageData{Account: a, Marketing: marketing, Consents: consents},
 	})
@@ -134,7 +134,10 @@ func (h *Handler) exportCSV(w http.ResponseWriter, r *http.Request) {
 // session or a slip cannot erase an account.
 func (h *Handler) deleteAccount(w http.ResponseWriter, r *http.Request) {
 	a, _ := accounts.FromContext(r.Context())
-	if strings.TrimSpace(r.PostFormValue("confirm")) != "ESBORRA" {
+	// The word to type depends on the language of the page; accept any of them.
+	switch strings.ToUpper(strings.TrimSpace(r.PostFormValue("confirm"))) {
+	case "ESBORRA", "BORRAR", "DELETE":
+	default:
 		h.render(w, r, http.StatusUnprocessableEntity, "Escriu ESBORRA per confirmar que vols esborrar el compte.", "")
 		return
 	}

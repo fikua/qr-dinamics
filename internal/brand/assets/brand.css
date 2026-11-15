@@ -90,3 +90,4 @@ button.link { background: none; border: none; color: var(--accent); padding: 0; 
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .site-footer a { color: var(--muted); }
 .site-footer a:hover { color: var(--accent); }
+.site-footer nav.lang a[aria-current] { color: var(--text); font-weight: 600; text-decoration: none; }

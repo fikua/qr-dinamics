@@ -1,0 +1,16 @@
+{{define "body"}}
+<h2>Service provider</h2>
+<p>In compliance with article 10 of Spanish Law 34/2002 on information society services and electronic commerce (LSSI), the provider of QR dinàmics is:</p>
+{{template "holder" .}}
+<p>Contact e-mail: <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+<p>“Fikua” is a trade name; it is not a company. There is no entry in any commercial register.</p>
+
+<h2>Purpose</h2>
+<p>QR dinàmics lets businesses and professionals create QR codes that redirect to a web address they can change whenever they want. The conditions of use are in the <a href="/legal/termes">terms and conditions</a>; data processing is described in the <a href="/legal/privacitat">privacy policy</a>.</p>
+
+<h2>Intellectual property</h2>
+<p>The software, design and texts of the service belong to the provider. The source code is publicly viewable, but no licence to use, copy or distribute it is granted. Third-party components are used under their own licences: see <a href="/legal/llicencies">third-party licences</a>. The service shows no customer logos or trademarks.</p>
+
+<h2>Reports and copyright</h2>
+<p>To report a QR code that leads to illegal or deceptive content (phishing, malware) or that infringes copyright or trademarks, write to <a href="mailto:{{.ContactEmail}}?subject=Report">{{.ContactEmail}}</a> stating the code's address ({{.RedirectURL}}/…), the reason and, if you are a rights holder, how you can show it. We review every report and, where appropriate, block the code and tell its owner why.</p>
+{{end}}

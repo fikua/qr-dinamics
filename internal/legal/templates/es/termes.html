@@ -1,0 +1,40 @@
+{{define "body"}}
+<p>Estos términos regulan el uso de QR dinàmics. Para crear una cuenta hay que aceptarlos, junto con la <a href="/legal/privacitat">política de privacidad</a>.</p>
+
+<h2>Quién presta el servicio</h2>
+{{template "holder" .}}
+<p>Contacto: <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>Qué ofrece</h2>
+<p>Crear códigos QR que redirigen a una dirección web, cambiar esa dirección sin reimprimir el código, pausarlos o borrarlos, y ver el número de escaneos. El servicio es para negocios y profesionales mayores de edad; no es un servicio para consumidores.</p>
+
+<h2>Beta</h2>
+<p>El servicio está en beta: es gratuito, puede cambiar y puede tener errores. Durante la beta no hay ningún cargo ni ningún pago, y no se pide ninguna tarjeta.</p>
+
+<h2>Precios, renovación y baja</h2>
+<p>Cuando haya planes de pago, el precio final (con IVA), la periodicidad y la renovación automática se mostrarán claramente antes de pagar, y te avisaremos por correo antes de cada renovación anual. No habrá cargos ocultos. Podrás darte de baja desde el panel con el mismo número de pasos que para suscribirte, y la política de reembolsos se añadirá aquí antes de empezar a cobrar. Ningún cambio de precio se aplicará sin avisarte previamente.</p>
+
+<h2>Disponibilidad</h2>
+<p>Trabajamos para que las redirecciones funcionen siempre, también cuando el panel o la base de datos no están disponibles. Aun así, durante la beta no garantizamos ningún nivel de disponibilidad y el servicio puede interrumpirse por mantenimiento o por causas ajenas. No prometemos que un código funcione para siempre: si algún día cerramos el servicio, te avisaremos con antelación.</p>
+
+<h2>Uso aceptable</h2>
+<p>No puedes utilizar el servicio para redirigir a contenido ilegal, engañoso (phishing, estafas), software malicioso, contenido que infrinja derechos de terceros (derechos de autor, marcas) ni para enviar correo no solicitado. Comprobamos las direcciones de destino y podemos bloquear un código o una cuenta que incumpla estas normas; te informaremos del motivo y podrás responder a <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>Denuncias</h2>
+<p>Cualquier persona puede denunciar un código desde el enlace «Denunciar un uso abusivo» de la página que se muestra cuando un código no está disponible, o escribiendo a <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>. Véase el <a href="/legal/avis-legal">aviso legal</a>.</p>
+
+<h2>Tu contenido</h2>
+<p>Eres responsable de las direcciones de destino y de los nombres que pones. Siguen siendo tuyos; solo los utilizamos para prestar el servicio.</p>
+
+<h2>Baja y borrado</h2>
+<p>Puedes borrar la cuenta cuando quieras desde la página Cuenta. Al borrarla, tus códigos dejan de redirigir y muestran una página neutra; el código corto no se reutiliza nunca. Podemos cerrar una cuenta que incumpla estos términos, con aviso previo salvo en casos graves.</p>
+
+<h2>Responsabilidad</h2>
+<p>El servicio se presta tal cual. En la medida en que lo permita la ley, no respondemos de daños indirectos ni de la pérdida de negocio derivada de una interrupción del servicio. Nada de estos términos limita la responsabilidad que la ley no permite limitar.</p>
+
+<h2>Cambios en los términos</h2>
+<p>Si cambiamos estos términos de forma sustancial, te avisaremos por correo con al menos 15 días de antelación. Si no estás de acuerdo, puedes borrar la cuenta antes de que se apliquen.</p>
+
+<h2>Ley aplicable</h2>
+<p>Estos términos se rigen por la ley española.</p>
+{{end}}

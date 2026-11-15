@@ -86,7 +86,7 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("deleted") == "1" {
 		p.Notice = "QR esborrat."
 	}
-	h.view.Render(w, http.StatusOK, "qr_list", p)
+	h.view.Render(w, r, http.StatusOK, "qr_list", p)
 }
 
 type formData struct {
@@ -100,7 +100,7 @@ func (h *Handler) newForm(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/qr", http.StatusSeeOther)
 		return
 	}
-	h.view.Render(w, http.StatusOK, "qr_new", web.Page{Title: "Nou QR", Email: a.Email, Data: formData{}})
+	h.view.Render(w, r, http.StatusOK, "qr_new", web.Page{Title: "Nou QR", Email: a.Email, Data: formData{}})
 }
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
@@ -111,7 +111,7 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 	}
 	f := formData{Name: strings.TrimSpace(r.PostFormValue("name")), Destination: r.PostFormValue("destination")}
 	if len([]rune(f.Name)) > maxNameLength {
-		h.view.Render(w, http.StatusUnprocessableEntity, "qr_new", web.Page{Title: "Nou QR", Email: a.Email, Error: "El nom pot tenir com a màxim 80 caràcters.", Data: f})
+		h.view.Render(w, r, http.StatusUnprocessableEntity, "qr_new", web.Page{Title: "Nou QR", Email: a.Email, Error: "El nom pot tenir com a màxim 80 caràcters.", Data: f})
 		return
 	}
 	q, err := h.svc.Create(r.Context(), o, f.Name, f.Destination)
@@ -121,7 +121,7 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 			h.fail(w, "create qr", err)
 			return
 		}
-		h.view.Render(w, http.StatusUnprocessableEntity, "qr_new", web.Page{Title: "Nou QR", Email: a.Email, Error: msg, Data: f})
+		h.view.Render(w, r, http.StatusUnprocessableEntity, "qr_new", web.Page{Title: "Nou QR", Email: a.Email, Error: msg, Data: f})
 		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("/qr/%d?created=1", q.ID), http.StatusSeeOther)
@@ -158,12 +158,12 @@ func (h *Handler) renderDetail(w http.ResponseWriter, r *http.Request, status in
 	a, o := owner(r)
 	id, ok := pathID(r)
 	if !ok {
-		h.notFound(w, a.Email)
+		h.notFound(w, r, a.Email)
 		return
 	}
 	q, err := h.svc.Get(r.Context(), o.ID, id)
 	if errors.Is(err, ErrNotFound) {
-		h.notFound(w, a.Email)
+		h.notFound(w, r, a.Email)
 		return
 	}
 	if err != nil {
@@ -189,7 +189,7 @@ func (h *Handler) renderDetail(w http.ResponseWriter, r *http.Request, status in
 	if title == "" {
 		title = q.Code
 	}
-	h.view.Render(w, status, "qr_detail", web.Page{Title: title, Email: a.Email, Error: errMsg, Notice: notice, Data: d})
+	h.view.Render(w, r, status, "qr_detail", web.Page{Title: title, Email: a.Email, Error: errMsg, Notice: notice, Data: d})
 }
 
 func (h *Handler) changeDestination(w http.ResponseWriter, r *http.Request) {
@@ -265,12 +265,12 @@ func (h *Handler) download(format string) http.HandlerFunc {
 		a, o := owner(r)
 		id, ok := pathID(r)
 		if !ok {
-			h.notFound(w, a.Email)
+			h.notFound(w, r, a.Email)
 			return
 		}
 		q, err := h.svc.Get(r.Context(), o.ID, id)
 		if errors.Is(err, ErrNotFound) {
-			h.notFound(w, a.Email)
+			h.notFound(w, r, a.Email)
 			return
 		}
 		if err != nil {
@@ -303,7 +303,7 @@ func (h *Handler) download(format string) http.HandlerFunc {
 func (h *Handler) actionError(w http.ResponseWriter, r *http.Request, err error) {
 	if errors.Is(err, ErrNotFound) {
 		a, _ := owner(r)
-		h.notFound(w, a.Email)
+		h.notFound(w, r, a.Email)
 		return
 	}
 	msg, ok := userMessage(err)
@@ -333,8 +333,8 @@ func userMessage(err error) (string, bool) {
 	return "", false
 }
 
-func (h *Handler) notFound(w http.ResponseWriter, email string) {
-	h.view.Render(w, http.StatusNotFound, "not_found", web.Page{Title: "No trobat", Email: email})
+func (h *Handler) notFound(w http.ResponseWriter, r *http.Request, email string) {
+	h.view.Render(w, r, http.StatusNotFound, "not_found", web.Page{Title: "No trobat", Email: email})
 }
 
 func (h *Handler) fail(w http.ResponseWriter, op string, err error) {

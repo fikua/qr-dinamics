@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"qrdinamics/internal/brand"
+	"qrdinamics/internal/i18n"
 )
 
 //go:embed templates/*.html
@@ -51,9 +52,21 @@ var funcs = template.FuncMap{
 	},
 }
 
+// langFuncs are the per-request template functions: translation and the
+// date formats of the language.
+func langFuncs(l i18n.Lang) template.FuncMap {
+	f := i18n.Funcs(l)
+	if l == i18n.EN {
+		f["date"] = func(t time.Time) string { return t.Format("2 Jan 2006") }
+		f["datetime"] = func(t time.Time) string { return t.Local().Format("2 Jan 2006 15:04") }
+		f["day"] = func(t time.Time) string { return t.Format("2 Jan") }
+	}
+	return f
+}
+
 // NewRenderer parses every page template. contactEmail goes in every footer.
 func NewRenderer(contactEmail string) (*Renderer, error) {
-	layout, err := template.New("layout.html").Funcs(funcs).Funcs(brand.TemplateFuncs()).ParseFS(templateFS, "templates/layout.html")
+	layout, err := template.New("layout.html").Funcs(funcs).Funcs(brand.TemplateFuncs()).Funcs(i18n.Funcs(i18n.CA)).ParseFS(templateFS, "templates/layout.html")
 	if err != nil {
 		return nil, fmt.Errorf("parse layout: %w", err)
 	}
@@ -78,16 +91,18 @@ func NewRenderer(contactEmail string) (*Renderer, error) {
 
 // Page is the data every page gets.
 type Page struct {
-	Title        string
+	Title        string // Catalan text, translated by Render
+	Lang         i18n.Lang
 	ContactEmail string // set by Render, shown in the footer
 	Email        string // signed-in user, empty when anonymous
-	Error        string
-	Notice       string
+	Error        string // Catalan text, translated by Render
+	Notice       string // Catalan text, translated by Render
 	Data         any
 }
 
-// Render writes a page with the given status.
-func (r *Renderer) Render(w http.ResponseWriter, status int, name string, p Page) {
+// Render writes a page with the given status, in the request's language.
+// Title, Error and Notice are Catalan texts and are translated here.
+func (r *Renderer) Render(w http.ResponseWriter, req *http.Request, status int, name string, p Page) {
 	t, ok := r.pages[name]
 	if !ok {
 		slog.Error("unknown template", "name", name)
@@ -95,13 +110,22 @@ func (r *Renderer) Render(w http.ResponseWriter, status int, name string, p Page
 		return
 	}
 	p.ContactEmail = r.contactEmail
+	p.Lang = i18n.FromRequest(req)
+	p.Title, p.Error, p.Notice = i18n.T(p.Lang, p.Title), i18n.T(p.Lang, p.Error), i18n.T(p.Lang, p.Notice)
+	t, err := t.Clone()
+	if err != nil {
+		slog.Error("clone template", "name", name, "err", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 	var buf bytes.Buffer
-	if err := t.ExecuteTemplate(&buf, "layout.html", p); err != nil {
+	if err := t.Funcs(langFuncs(p.Lang)).ExecuteTemplate(&buf, "layout.html", p); err != nil {
 		slog.Error("render template", "name", name, "err", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Vary", "Cookie, Accept-Language")
 	w.WriteHeader(status)
 	buf.WriteTo(w)
 }

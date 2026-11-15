@@ -18,6 +18,7 @@ import (
 
 	"qrdinamics/internal/brand"
 	"qrdinamics/internal/config"
+	"qrdinamics/internal/i18n"
 	"qrdinamics/internal/landing"
 	"qrdinamics/internal/legal"
 	"qrdinamics/internal/redirect"
@@ -89,6 +90,7 @@ func run() error {
 
 	mux := http.NewServeMux()
 	brand.Routes(mux)
+	i18n.Routes(mux)
 	landingPage.Routes(mux)
 	legalPages.Routes(mux)
 	(&redirect.Handler{

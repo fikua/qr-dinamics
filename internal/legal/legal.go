@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"qrdinamics/internal/brand"
+	"qrdinamics/internal/i18n"
 )
 
 // Version is the version of the terms and privacy policy. Keep it equal to
@@ -48,7 +49,7 @@ type Info struct {
 	SafeBrowsingEnabled bool
 }
 
-//go:embed templates/*.html
+//go:embed templates
 var templateFS embed.FS
 
 //go:embed legal.css
@@ -72,15 +73,22 @@ var Pages = []Page{
 	{"llicencies", "Llicències de tercers"},
 }
 
-// Handler serves /legal/{page} and /legal/legal.css.
+type pageKey struct {
+	lang i18n.Lang
+	slug string
+}
+
+// Handler serves /legal/{page} and /legal/legal.css. The layout is shared;
+// each language has its own page bodies in templates/<lang>/.
 type Handler struct {
 	info  Info
-	pages map[string]*template.Template
+	pages map[pageKey]*template.Template
 }
 
 type pageData struct {
 	Info
 	Page               Page
+	Lang               i18n.Lang
 	Pages              []Page
 	Version            string
 	Retention          map[string]int
@@ -90,15 +98,18 @@ type pageData struct {
 	BrandV, CSSV       string // asset versions for cache busting
 }
 
-// NewHandler parses the page templates.
+// NewHandler parses the page templates of every language.
 func NewHandler(info Info) (*Handler, error) {
-	h := &Handler{info: info, pages: map[string]*template.Template{}}
-	for _, p := range Pages {
-		t, err := template.New("layout.html").Funcs(brand.TemplateFuncs()).ParseFS(templateFS, "templates/layout.html", "templates/"+p.Slug+".html")
-		if err != nil {
-			return nil, err
+	h := &Handler{info: info, pages: map[pageKey]*template.Template{}}
+	for _, lang := range i18n.All {
+		for _, p := range Pages {
+			t, err := template.New("layout.html").Funcs(brand.TemplateFuncs()).Funcs(i18n.Funcs(lang)).
+				ParseFS(templateFS, "templates/layout.html", "templates/"+string(lang)+"/"+p.Slug+".html")
+			if err != nil {
+				return nil, err
+			}
+			h.pages[pageKey{lang, p.Slug}] = t
 		}
-		h.pages[p.Slug] = t
 	}
 	return h, nil
 }
@@ -118,7 +129,8 @@ func (h *Handler) Routes(mux *http.ServeMux) {
 
 func (h *Handler) page(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("page")
-	t, ok := h.pages[slug]
+	lang := i18n.FromRequest(r)
+	t, ok := h.pages[pageKey{lang, slug}]
 	if !ok {
 		http.NotFound(w, r)
 		return
@@ -130,7 +142,7 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	data := pageData{
-		Info: h.info, Page: page, Pages: Pages, Version: Version,
+		Info: h.info, Page: page, Lang: lang, Pages: Pages, Version: Version,
 		Retention: map[string]int{
 			"ScanMonths": ScanRetentionMonths, "UnverifiedDays": UnverifiedAccountDays,
 			"SessionDays": SessionDays, "BackupDays": BackupDays,
@@ -148,6 +160,8 @@ func (h *Handler) page(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Vary", "Cookie, Accept-Language")
+	w.Header().Set("Cache-Control", "private, max-age=300")
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'self'; font-src 'self'; img-src 'self'; frame-ancestors 'none'")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	buf.WriteTo(w)

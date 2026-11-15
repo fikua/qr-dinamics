@@ -1,0 +1,13 @@
+{{define "body"}}
+<p>QR dinàmics solo utiliza las cookies estrictamente necesarias para que el servicio funcione. No utilizamos cookies de analítica, publicidad ni seguimiento, y por eso no te pedimos consentimiento ni mostramos ningún banner. Si algún día añadimos alguna, no se activará hasta que la aceptes.</p>
+<table>
+<thead><tr><th>Cookie</th><th>Quién la pone</th><th>Para qué</th><th>Duración</th></tr></thead>
+<tbody>
+<tr><td><code>sid</code></td><td>QR dinàmics (panel)</td><td>Mantener la sesión iniciada. Solo se envía por HTTPS y no es accesible desde JavaScript.</td><td>{{.Retention.SessionDays}} días o hasta que cierres la sesión</td></tr>
+<tr><td><code>lang</code></td><td>QR dinàmics</td><td>Recordar el idioma que has elegido con el selector de idioma. Solo se crea si eliges el idioma a mano; si no, usamos el idioma del navegador.</td><td>1 año</td></tr>
+<tr><td><code>CF_Authorization</code></td><td>Cloudflare Access (panel, durante la beta cerrada)</td><td>Comprobar que tienes acceso a la beta.</td><td>24 horas</td></tr>
+<tr><td><code>__cf_bm</code> y similares</td><td>Cloudflare</td><td>Protección contra bots y ataques, cuando Cloudflare lo considera necesario.</td><td>Hasta 30 minutos</td></tr>
+</tbody>
+</table>
+<p>Escanear un código QR no pone ninguna cookie del servicio.</p>
+{{end}}

@@ -12,3 +12,4 @@ th { font-size: 14px; color: var(--muted); }
 pre { white-space: pre-wrap; word-break: break-word; font-size: 13px; background: var(--bg-alt); padding: 12px; border-radius: 6px; }
 nav.legal { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 16px 0; font-size: 14px; }
 nav.legal a[aria-current] { color: var(--text); font-weight: 600; text-decoration: none; }
+.translation-note { border-left: 4px solid var(--border); padding: 8px 12px; background: var(--bg-alt); color: var(--muted); font-size: 14px; }

@@ -67,7 +67,7 @@ func (h *Handler) RequireAccount(next http.Handler) http.Handler {
 }
 
 func (h *Handler) registerForm(w http.ResponseWriter, r *http.Request) {
-	h.view.Render(w, http.StatusOK, "register", web.Page{Title: "Crea un compte"})
+	h.view.Render(w, r, http.StatusOK, "register", web.Page{Title: "Crea un compte"})
 }
 
 func (h *Handler) register(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +93,7 @@ func (h *Handler) register(w http.ResponseWriter, r *http.Request) {
 			slog.Error("register", "err", err)
 			msg = "No s'ha pogut crear el compte. Torna-ho a provar."
 		}
-		h.view.Render(w, http.StatusUnprocessableEntity, "register", web.Page{Title: "Crea un compte", Error: msg,
+		h.view.Render(w, r, http.StatusUnprocessableEntity, "register", web.Page{Title: "Crea un compte", Error: msg,
 			Data: map[string]any{"Email": in.Email, "Marketing": in.Marketing}})
 		return
 	}
@@ -109,7 +109,7 @@ func (h *Handler) register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) loginForm(w http.ResponseWriter, r *http.Request) {
-	h.view.Render(w, http.StatusOK, "login", web.Page{Title: "Inicia la sessió"})
+	h.view.Render(w, r, http.StatusOK, "login", web.Page{Title: "Inicia la sessió"})
 }
 
 func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
@@ -121,7 +121,7 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 			slog.Error("login", "err", err)
 			msg = "No s'ha pogut iniciar la sessió. Torna-ho a provar."
 		}
-		h.view.Render(w, http.StatusUnauthorized, "login", web.Page{Title: "Inicia la sessió", Error: msg, Data: map[string]string{"Email": email}})
+		h.view.Render(w, r, http.StatusUnauthorized, "login", web.Page{Title: "Inicia la sessió", Error: msg, Data: map[string]string{"Email": email}})
 		return
 	}
 	h.setCookie(w, token)
@@ -142,9 +142,9 @@ func (h *Handler) verify(w http.ResponseWriter, r *http.Request) {
 	err := h.svc.VerifyEmail(r.Context(), r.URL.Query().Get("token"))
 	switch {
 	case err == nil:
-		h.view.Render(w, http.StatusOK, "verified", web.Page{Title: "Correu confirmat"})
+		h.view.Render(w, r, http.StatusOK, "verified", web.Page{Title: "Correu confirmat"})
 	case errors.Is(err, ErrInvalidToken):
-		h.view.Render(w, http.StatusBadRequest, "verified", web.Page{Title: "Enllaç no vàlid", Error: "L'enllaç no és vàlid o ha caducat. Inicia la sessió i demana'n un de nou."})
+		h.view.Render(w, r, http.StatusBadRequest, "verified", web.Page{Title: "Enllaç no vàlid", Error: "L'enllaç no és vàlid o ha caducat. Inicia la sessió i demana'n un de nou."})
 	default:
 		slog.Error("verify email", "err", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)

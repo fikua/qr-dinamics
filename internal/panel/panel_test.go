@@ -380,3 +380,66 @@ func TestAccessRestriction(t *testing.T) {
 	p.Handler.ServeHTTP(w, httptest.NewRequest("GET", "/login", nil))
 	expect(t, "without access token", w.Code, http.StatusForbidden)
 }
+
+// The panel, its error messages and the e-mails follow the browser language,
+// and a manual choice with the selector wins over it.
+func TestLanguage(t *testing.T) {
+	c, box, _ := setup(t)
+	withLang := func(method, path, accept string, form url.Values) (int, string) {
+		t.Helper()
+		var body io.Reader
+		if form != nil {
+			body = strings.NewReader(form.Encode())
+		}
+		req, _ := http.NewRequest(method, c.srv.URL+path, body)
+		if form != nil {
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		}
+		if accept != "" {
+			req.Header.Set("Accept-Language", accept)
+		}
+		resp, err := c.c.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		b, _ := io.ReadAll(resp.Body)
+		return resp.StatusCode, string(b)
+	}
+
+	_, body := withLang("GET", "/login", "es-ES,es;q=0.9", nil)
+	contains(t, "Spanish login", body, `<html lang="es">`, "Inicia sesión", "Contraseña")
+
+	// Error messages are translated.
+	code, body := withLang("POST", "/register", "en-GB,en;q=0.9", url.Values{"email": {"nope"}, "password": {"una-contrasenya"}, "accept_terms": {"on"}})
+	expect(t, "invalid e-mail", code, http.StatusUnprocessableEntity)
+	contains(t, "English error", body, `<html lang="en">`, "The e-mail address is not valid.")
+
+	// The verification e-mail is written in the language of the registration.
+	code, _ = withLang("POST", "/register", "es-ES,es;q=0.9", url.Values{"email": {"ana@example.com"}, "password": {"una-contrasenya"}, "accept_terms": {"on"}})
+	expect(t, "register", code, http.StatusSeeOther)
+	box.mu.Lock()
+	m := box.msgs[len(box.msgs)-1]
+	box.mu.Unlock()
+	if m.Subject != "Confirma tu correo" || !strings.Contains(m.Body, "Confirma tu correo para empezar a crear QR") || !strings.Contains(m.Body, "no publicidad") {
+		t.Fatalf("Spanish verification e-mail: %q / %q", m.Subject, m.Body)
+	}
+
+	// The selector overrides the browser language and sticks.
+	code, _, h := c.do("GET", "/lang/en", nil)
+	expect(t, "switch", code, http.StatusSeeOther)
+	if !strings.Contains(h.Get("Set-Cookie"), "lang=en") {
+		t.Fatalf("no lang cookie: %v", h)
+	}
+	_, body = withLang("GET", "/qr", "es", nil)
+	contains(t, "cookie wins", body, `<html lang="en">`, "My QR codes")
+
+	// Typing the confirmation word works in every language.
+	for _, word := range []string{"ESBORRA", "borrar", "Delete"} {
+		code, body := withLang("POST", "/compte/esborra", "", url.Values{"password": {"incorrecta!!"}, "confirm": {word}})
+		expect(t, "delete with "+word, code, http.StatusUnprocessableEntity)
+		if strings.Contains(body, "confirm that you want") || strings.Contains(body, "confirmar que quieres") || strings.Contains(body, "confirmar que vols") {
+			t.Fatalf("%s should be accepted as the confirmation word", word)
+		}
+	}
+}

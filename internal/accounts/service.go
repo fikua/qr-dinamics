@@ -18,6 +18,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 
+	"qrdinamics/internal/i18n"
 	mailer "qrdinamics/internal/mail"
 )
 
@@ -197,11 +198,12 @@ func (s *Service) SendVerification(ctx context.Context, a Account) error {
 		return err
 	}
 	link := s.panelBaseURL + "/verify?token=" + token
+	lang := i18n.FromContext(ctx)
 	return s.mail.Send(ctx, mailer.Message{
 		To:      a.Email,
-		Subject: "Confirma el teu correu",
-		Body: "Hola!\n\nConfirma el teu correu per començar a crear QR:\n" + link + "\n\nL'enllaç caduca en 48 hores." +
-			mailer.ServiceFooter(s.panelBaseURL),
+		Subject: i18n.T(lang, "Confirma el teu correu"),
+		Body: i18n.T(lang, "Hola!") + "\n\n" + i18n.T(lang, "Confirma el teu correu per començar a crear QR:") + "\n" + link +
+			"\n\n" + i18n.T(lang, "L'enllaç caduca en 48 hores.") + mailer.ServiceFooter(lang, s.panelBaseURL),
 	})
 }
 

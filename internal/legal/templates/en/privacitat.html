@@ -1,0 +1,54 @@
+{{define "body"}}
+<p>This policy explains what data QR dinàmics processes, why, for how long and what rights you have. It is written to be understood; if in doubt, write to <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>Data controller</h2>
+{{template "holder" .}}
+<p>Contact: <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>What data we process</h2>
+<table>
+<thead><tr><th>Data</th><th>Purpose</th><th>Legal basis</th><th>How long</th></tr></thead>
+<tbody>
+<tr><td>E-mail address and password (we only store the hash)</td><td>Create and protect your account, send you service e-mails</td><td>Performance of a contract (GDPR art. 6(1)(b))</td><td>As long as the account exists. If you do not confirm your e-mail, we delete it after {{.Retention.UnverifiedDays}} days.</td></tr>
+<tr><td>QR codes: internal name, destination address and change history</td><td>Provide the service</td><td>Performance of a contract</td><td>Until you delete the code or the account. The short code is kept with no other data so that it is never reused.</td></tr>
+<tr><td>Scans: date and time, country and device type</td><td>Show you the statistics of your codes</td><td>Performance of a contract</td><td>{{.Retention.ScanMonths}} months; then they are deleted automatically.</td></tr>
+<tr><td>Acceptance record: which version of the terms and privacy policy you accepted, whether you want news, and when</td><td>Be able to prove consent</td><td>Legal obligation and legitimate interest (art. 6(1)(c) and 6(1)(f))</td><td>As long as the account exists.</td></tr>
+<tr><td>Session cookie</td><td>Keep you signed in</td><td>Necessary for the service</td><td>{{.Retention.SessionDays}} days or until you sign out. See the <a href="/legal/cookies">cookie policy</a>.</td></tr>
+</tbody>
+</table>
+<p>We only ask for an e-mail address and a password. We do not ask for your name, phone number, address or card to sign up.</p>
+<p>Database backups are made every day and kept for {{.Retention.BackupDays}} days; deleted data may remain in them until that period ends.</p>
+
+<h2>People who scan a code</h2>
+<p>If you scan a QR code of the service, we ask you for nothing and set no cookies. We record the date, the country (derived from the IP address by Cloudflare's network) and the device type (phone, tablet or computer). The IP address is never stored. This data cannot identify you.</p>
+
+<h2>Marketing</h2>
+<p>We will only send you product news if you have expressly accepted it, in a separate, unticked box. You can withdraw your consent at any time on the account page or with the unsubscribe link in every news e-mail. Service e-mails (confirmation, security, billing) are not advertising and have no unsubscribe link.</p>
+
+<h2>Processors</h2>
+<table>
+<thead><tr><th>Provider</th><th>Service</th><th>Where</th></tr></thead>
+<tbody>
+<tr><td>OVH SAS (OVHcloud)</td><td>Server where the service runs, database and backups</td><td>France (EU)</td></tr>
+<tr><td>Cloudflare, Inc.</td><td>DNS, content delivery and protection; access control to the panel during the beta. Processes IP addresses transiently.</td><td>Global network. Transfers outside the EU rely on the EU-US Data Privacy Framework and standard contractual clauses.</td></tr>
+{{if .SafeBrowsingEnabled}}<tr><td>Google LLC (Safe Browsing)</td><td>Check that destination addresses are not dangerous. Only the destination address is sent.</td><td>USA; EU-US Data Privacy Framework</td></tr>{{end}}
+</tbody>
+</table>
+<p>When payments and transactional e-mail exist, we will add their providers here before we start using them.</p>
+<p>We do not sell or share data with third parties. We use no analytics, advertising or trackers. We do not use artificial intelligence with your data nor use it to train models.</p>
+
+<h2>Your rights</h2>
+<p>You have the right of access, rectification, erasure, restriction, objection and portability, and to withdraw consent. From the <a href="{{.PanelURL}}/compte">Account</a> page you can, without writing to us:</p>
+<ul>
+<li>download all your data (JSON) and your codes (CSV);</li>
+<li>delete the account and all associated data;</li>
+<li>turn the marketing consent on or off.</li>
+</ul>
+<p>For any other request, write to <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>; we answer within one month at most. If you think we have not handled your data properly, you can complain to the <a href="https://www.aepd.es">Spanish Data Protection Agency</a>.</p>
+
+<h2>Minors</h2>
+<p>The service is for businesses and professionals of legal age. It is not aimed at minors and we do not knowingly collect their data.</p>
+
+<h2>Changes</h2>
+<p>If we change this policy substantially, we will tell you by e-mail before it applies. The current version is always on this page.</p>
+{{end}}

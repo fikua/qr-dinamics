@@ -4,6 +4,8 @@ package mail
 import (
 	"context"
 	"log/slog"
+
+	"qrdinamics/internal/i18n"
 )
 
 // Message is one transactional e-mail.
@@ -32,8 +34,8 @@ func (Log) Send(_ context.Context, m Message) error {
 // sent and where to manage preferences. Marketing e-mails, when they exist,
 // must use a different footer with a one-click unsubscribe link and the
 // List-Unsubscribe header.
-func ServiceFooter(panelBaseURL string) string {
-	return "\n\n--\nReps aquest correu perquè tens un compte a QR dinàmics. És un missatge del servei, necessari per fer servir el compte, i no publicitat." +
-		"\nPreferències i dades del compte: " + panelBaseURL + "/compte" +
-		"\nPolítica de privacitat: " + panelBaseURL + "/legal/privacitat"
+func ServiceFooter(lang i18n.Lang, panelBaseURL string) string {
+	return "\n\n--\n" + i18n.T(lang, "Reps aquest correu perquè tens un compte a QR dinàmics. És un missatge del servei, necessari per fer servir el compte, i no publicitat.") +
+		"\n" + i18n.T(lang, "Preferències i dades del compte:") + " " + panelBaseURL + "/compte" +
+		"\n" + i18n.T(lang, "Política de privacitat:") + " " + panelBaseURL + "/legal/privacitat"
 }

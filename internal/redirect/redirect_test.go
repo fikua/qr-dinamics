@@ -95,6 +95,29 @@ func TestNeutralPage(t *testing.T) {
 	}
 }
 
+func TestNeutralPageSpeaksTheVisitorsLanguage(t *testing.T) {
+	mux, _ := newServer(t)
+	for _, tc := range []struct{ accept, lang, want string }{
+		{"", "ca", "Aquest codi QR no està disponible"},
+		{"es-ES,es;q=0.9", "es", "Este código QR no está disponible"},
+		{"en-GB,en;q=0.9", "en", "This QR code is unavailable"},
+	} {
+		r := httptest.NewRequest("GET", "/unkn234", nil)
+		if tc.accept != "" {
+			r.Header.Set("Accept-Language", tc.accept)
+		}
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, r)
+		body := w.Body.String()
+		if !strings.Contains(body, `<html lang="`+tc.lang+`">`) || !strings.Contains(body, tc.want) || !strings.Contains(body, "mailto:abus@example.com?subject=") {
+			t.Errorf("%s: %s", tc.lang, body)
+		}
+		if tc.lang != "ca" && strings.Contains(body, "Denunciar un ús") {
+			t.Errorf("%s: abuse link not translated", tc.lang)
+		}
+	}
+}
+
 func TestBotsAndHEADAreNotCounted(t *testing.T) {
 	mux, rec := newServer(t, Row{Code: "abc2345", Entry: Entry{ID: 7, Destination: "https://example.com", Status: "active"}})
 	bot := httptest.NewRequest("GET", "/abc2345", nil)

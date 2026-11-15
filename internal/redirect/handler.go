@@ -3,9 +3,11 @@ package redirect
 import (
 	"html/template"
 	"net/http"
+	"net/url"
 	"time"
 
 	"qrdinamics/internal/brand"
+	"qrdinamics/internal/i18n"
 	"qrdinamics/internal/qrcodes"
 )
 
@@ -29,12 +31,12 @@ func (h *Handler) Routes(mux *http.ServeMux) {
 func (h *Handler) redirect(w http.ResponseWriter, r *http.Request) {
 	code := r.PathValue("code")
 	if !qrcodes.ValidCode(code) {
-		h.neutral(w, http.StatusNotFound)
+		h.neutral(w, r, http.StatusNotFound)
 		return
 	}
 	e, ok := h.Table.Lookup(code)
 	if !ok || e.Status != string(qrcodes.Active) {
-		h.neutral(w, http.StatusNotFound)
+		h.neutral(w, r, http.StatusNotFound)
 		return
 	}
 	if r.Method == http.MethodGet {
@@ -61,13 +63,13 @@ func (h *Handler) health(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("ok"))
 }
 
-var neutralPage = template.Must(template.New("neutral").Funcs(brand.TemplateFuncs()).Parse(`<!doctype html>
-<html lang="ca">
+var neutralPage = template.Must(template.New("neutral").Funcs(brand.TemplateFuncs()).Funcs(i18n.Funcs(i18n.CA)).Parse(`<!doctype html>
+<html lang="{{.Lang.Locale}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Codi QR no disponible</title>
+<title>{{t "Codi QR no disponible"}}</title>
 <link rel="icon" href="/brand/fikua-icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/brand/brand.css?v={{.BrandV}}">
 <style>
@@ -76,27 +78,37 @@ main{min-height:calc(100vh - 4px);display:grid;place-items:center;padding:16px}
 .box img{width:56px;height:56px}
 h1{font-size:24px;margin:16px 0 8px}
 p{color:var(--muted)}
+nav.lang{font-size:14px}nav.lang a{color:var(--muted)}nav.lang a[aria-current]{color:var(--text);font-weight:600;text-decoration:none}
 </style>
 </head>
 <body>
 {{emailOff}}
 <main><div class="box">
 <img src="/brand/fikua-icon.svg" alt="">
-<h1>Aquest codi QR no està disponible</h1>
-<p>El codi que has escanejat no porta enlloc ara mateix. Pot ser que l'hagin pausat o retirat.</p>
-<p lang="es">Este código QR no está disponible en este momento.</p>
-<p><small><a href="mailto:{{.Email}}?subject=Den%C3%BAncia%20QR">Denunciar un ús abusiu</a> · <a href="/legal/privacitat">Privacitat</a> · <a href="/legal/avis-legal">Avís legal</a></small></p>
-<p><small>Aquesta pàgina no fa servir cookies.</small></p>
+<h1>{{t "Aquest codi QR no està disponible"}}</h1>
+<p>{{t "El codi que has escanejat no porta enlloc ara mateix. Pot ser que l'hagin pausat o retirat."}}</p>
+<p><small><a href="mailto:{{.Email}}?subject={{.Subject}}">{{t "Denunciar un ús abusiu"}}</a> · <a href="/legal/privacitat">{{t "Privacitat"}}</a> · <a href="/legal/avis-legal">{{t "Avís legal"}}</a></small></p>
+<p><small>{{t "Aquesta pàgina no fa servir cookies."}}</small></p>
+<nav class="lang" aria-label="{{t "Idioma"}}">{{range langs}}<a href="/lang/{{.}}" lang="{{.}}" hreflang="{{.}}"{{if eq . $.Lang}} aria-current="true"{{end}}>{{.Name}}</a> {{end}}</nav>
 </div></main>
 {{emailOn}}
 </body>
 </html>`))
 
-func (h *Handler) neutral(w http.ResponseWriter, status int) {
+func (h *Handler) neutral(w http.ResponseWriter, r *http.Request, status int) {
+	lang := i18n.FromRequest(r)
+	t, err := neutralPage.Clone()
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self'; frame-ancestors 'none'")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(status)
-	neutralPage.Execute(w, struct{ Email, BrandV string }{h.ContactEmail, brand.Version})
+	t.Funcs(i18n.Funcs(lang)).Execute(w, struct {
+		Email, BrandV, Subject string
+		Lang                   i18n.Lang
+	}{h.ContactEmail, brand.Version, url.PathEscape(i18n.T(lang, "Denúncia QR")), lang})
 }

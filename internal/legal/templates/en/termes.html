@@ -1,0 +1,40 @@
+{{define "body"}}
+<p>These terms govern the use of QR dinàmics. To create an account you must accept them, together with the <a href="/legal/privacitat">privacy policy</a>.</p>
+
+<h2>Who provides the service</h2>
+{{template "holder" .}}
+<p>Contact: <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>What it offers</h2>
+<p>Create QR codes that redirect to a web address, change that address without reprinting the code, pause or delete them, and see the number of scans. The service is for businesses and professionals of legal age; it is not a consumer service.</p>
+
+<h2>Beta</h2>
+<p>The service is in beta: it is free, it may change and it may have errors. During the beta there is no charge or payment, and no card is requested.</p>
+
+<h2>Prices, renewal and cancellation</h2>
+<p>When paid plans exist, the final price (including VAT), the billing period and the automatic renewal will be shown clearly before you pay, and we will e-mail you before each annual renewal. There will be no hidden charges. You will be able to cancel from the panel in the same number of steps as it takes to subscribe, and the refund policy will be added here before we start charging. No price change will apply without notifying you first.</p>
+
+<h2>Availability</h2>
+<p>We work so that redirects always work, even when the panel or the database are unavailable. Even so, during the beta we do not guarantee any level of availability and the service may be interrupted for maintenance or for reasons beyond our control. We do not promise that a code will work forever: if we ever close the service, we will tell you in advance.</p>
+
+<h2>Acceptable use</h2>
+<p>You may not use the service to redirect to illegal or deceptive content (phishing, scams), malware, content that infringes third-party rights (copyright, trademarks) or to send unsolicited e-mail. We check destination addresses and may block a code or an account that breaks these rules; we will tell you why and you can reply to <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+
+<h2>Reports</h2>
+<p>Anyone can report a code from the “Report abuse” link on the page shown when a code is unavailable, or by writing to <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>. See the <a href="/legal/avis-legal">legal notice</a>.</p>
+
+<h2>Your content</h2>
+<p>You are responsible for the destination addresses and names you enter. They remain yours; we only use them to provide the service.</p>
+
+<h2>Cancellation and deletion</h2>
+<p>You can delete your account at any time from the Account page. When you delete it, your codes stop redirecting and show a neutral page; the short code is never reused. We may close an account that breaks these terms, with prior notice except in serious cases.</p>
+
+<h2>Liability</h2>
+<p>The service is provided as is. To the extent the law allows, we are not liable for indirect damages or loss of business resulting from an interruption of the service. Nothing in these terms limits liability that the law does not allow to be limited.</p>
+
+<h2>Changes to the terms</h2>
+<p>If we change these terms substantially, we will e-mail you at least 15 days in advance. If you do not agree, you can delete your account before they apply.</p>
+
+<h2>Governing law</h2>
+<p>These terms are governed by Spanish law.</p>
+{{end}}

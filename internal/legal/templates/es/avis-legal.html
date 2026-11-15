@@ -1,0 +1,16 @@
+{{define "body"}}
+<h2>Titular del servicio</h2>
+<p>En cumplimiento del artículo 10 de la Ley 34/2002, de servicios de la sociedad de la información y de comercio electrónico (LSSI), el titular de QR dinàmics es:</p>
+{{template "holder" .}}
+<p>Correo de contacto: <a href="mailto:{{.ContactEmail}}">{{.ContactEmail}}</a>.</p>
+<p>«Fikua» es un nombre comercial; no es una sociedad. No hay inscripción alguna en un registro mercantil.</p>
+
+<h2>Objeto</h2>
+<p>QR dinàmics permite a negocios y profesionales crear códigos QR que redirigen a una dirección web que pueden cambiar cuando quieran. Las condiciones de uso están en los <a href="/legal/termes">términos y condiciones</a>; el tratamiento de datos, en la <a href="/legal/privacitat">política de privacidad</a>.</p>
+
+<h2>Propiedad intelectual</h2>
+<p>El software, el diseño y los textos del servicio son del titular. El código fuente es visible públicamente, pero no se concede ninguna licencia de uso, copia o distribución. Los componentes de terceros se utilizan de acuerdo con sus licencias: véanse las <a href="/legal/llicencies">licencias de terceros</a>. El servicio no muestra logotipos ni marcas de clientes.</p>
+
+<h2>Denuncias y derechos de autor</h2>
+<p>Para denunciar un código QR que lleve a contenido ilegal, engañoso (phishing, software malicioso) o que infrinja derechos de autor o de marca, escribe a <a href="mailto:{{.ContactEmail}}?subject=Den%C3%BAncia">{{.ContactEmail}}</a> indicando la dirección del código ({{.RedirectURL}}/…), el motivo y, si eres titular de un derecho, cómo lo acreditas. Revisamos cada aviso y, si procede, bloqueamos el código e informamos a su propietario del motivo.</p>
+{{end}}
