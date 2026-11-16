@@ -342,10 +342,10 @@ func TestPlumbing(t *testing.T) {
 	if h.Get("Location") != "/qr" {
 		t.Fatalf("root -> %q", h.Get("Location"))
 	}
-	code, body, _ := c.get("/healthz")
-	expect(t, "healthz", code, http.StatusOK)
+	code, body, _ := c.get("/health")
+	expect(t, "health", code, http.StatusOK)
 	if body != "ok" {
-		t.Fatalf("healthz body %q", body)
+		t.Fatalf("health body %q", body)
 	}
 	code, _, h = c.get("/static/app.css")
 	expect(t, "css", code, http.StatusOK)

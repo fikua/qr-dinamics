@@ -39,6 +39,7 @@ func TestValidCode(t *testing.T) {
 		"abc-345":  false,
 		"":         false,
 		"healthz":  false,
+		"health":   false, // GET /health must never be a code (OBS-17)
 	}
 	for in, want := range tests {
 		if got := ValidCode(in); got != want {

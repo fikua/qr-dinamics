@@ -43,7 +43,7 @@ func TestPostgresSourceSinkAndRun(t *testing.T) {
 	mux := http.NewServeMux()
 	h.Routes(mux)
 	w := httptest.NewRecorder()
-	mux.ServeHTTP(w, httptest.NewRequest("GET", "/healthz", nil))
+	mux.ServeHTTP(w, httptest.NewRequest("GET", "/health", nil))
 	if w.Code != http.StatusServiceUnavailable {
 		t.Fatalf("empty table health = %d, want 503", w.Code)
 	}
@@ -62,7 +62,7 @@ func TestPostgresSourceSinkAndRun(t *testing.T) {
 		t.Fatal("Run did not load the table")
 	}
 	w = httptest.NewRecorder()
-	mux.ServeHTTP(w, httptest.NewRequest("GET", "/healthz", nil))
+	mux.ServeHTTP(w, httptest.NewRequest("GET", "/health", nil))
 	if w.Code != http.StatusOK {
 		t.Fatalf("health = %d, want 200", w.Code)
 	}

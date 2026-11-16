@@ -138,7 +138,7 @@ func (f fanout) WithGroup(name string) slog.Handler {
 
 // HTTPHandler traces and measures every request (OBS-11): the span and the
 // http.route attribute use the ServeMux pattern ("GET /{code}"), never the
-// requested path. Health checks are not traced.
+// requested path. GET /health (the only health path, OBS-17) is not traced.
 func HTTPHandler(next http.Handler) http.Handler {
 	return otelhttp.NewHandler(next, "http.server",
 		otelhttp.WithSpanNameFormatter(func(_ string, r *http.Request) string {
@@ -148,7 +148,7 @@ func HTTPHandler(next http.Handler) http.Handler {
 			return r.Method
 		}),
 		otelhttp.WithFilter(func(r *http.Request) bool {
-			return r.URL.Path != "/health" && r.URL.Path != "/healthz"
+			return r.URL.Path != "/health"
 		}),
 	)
 }

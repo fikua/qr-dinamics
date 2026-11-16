@@ -23,7 +23,7 @@ type Handler struct {
 
 // Routes registers the redirect routes.
 func (h *Handler) Routes(mux *http.ServeMux) {
-	mux.HandleFunc("GET /healthz", h.health)
+	mux.HandleFunc("GET /health", h.health)
 	mux.HandleFunc("GET /{code}", h.redirect)
 }
 
