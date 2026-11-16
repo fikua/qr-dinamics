@@ -64,8 +64,10 @@ func (h *Handler) redirect(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) health(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
-	if h.Table.Len() == 0 {
-		http.Error(w, "redirect table empty", http.StatusServiceUnavailable)
+	// Healthy once the table was loaded from the database or a snapshot, even
+	// with no codes yet; never loaded means it cannot answer for any code.
+	if !h.Table.Loaded() {
+		http.Error(w, "redirect table not loaded", http.StatusServiceUnavailable)
 		return
 	}
 	w.Write([]byte("ok"))

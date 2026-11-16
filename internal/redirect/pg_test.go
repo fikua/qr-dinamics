@@ -45,7 +45,7 @@ func TestPostgresSourceSinkAndRun(t *testing.T) {
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, httptest.NewRequest("GET", "/health", nil))
 	if w.Code != http.StatusServiceUnavailable {
-		t.Fatalf("empty table health = %d, want 503", w.Code)
+		t.Fatalf("health before the first load = %d, want 503", w.Code)
 	}
 
 	runCtx, cancel := context.WithCancel(ctx)

@@ -35,6 +35,7 @@ type Table struct {
 	mu      sync.RWMutex
 	entries map[string]Entry
 	since   time.Time // newest updated_at applied
+	loaded  bool      // a full reload or a snapshot has been applied
 }
 
 // NewTable returns an empty table.
@@ -53,6 +54,15 @@ func (t *Table) Len() int {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	return len(t.entries)
+}
+
+// Loaded reports whether the table holds a complete picture: a full reload
+// from the database or a snapshot was applied. An empty table can be loaded
+// (no codes yet); a table that never loaded cannot answer for any code.
+func (t *Table) Loaded() bool {
+	t.mu.RLock()
+	defer t.mu.RUnlock()
+	return t.loaded
 }
 
 // Since returns the newest updated_at applied.
@@ -85,7 +95,7 @@ func (t *Table) Replace(rows []Row) {
 		}
 	}
 	t.mu.Lock()
-	t.entries, t.since = entries, since
+	t.entries, t.since, t.loaded = entries, since, true
 	t.mu.Unlock()
 }
 
@@ -138,7 +148,7 @@ func (t *Table) Load(path string) (bool, error) {
 		s.Entries = map[string]Entry{}
 	}
 	t.mu.Lock()
-	t.entries, t.since = s.Entries, s.Since
+	t.entries, t.since, t.loaded = s.Entries, s.Since, true
 	t.mu.Unlock()
 	return true, nil
 }
