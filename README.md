@@ -46,6 +46,10 @@ The panel's user interface is in Catalan; code, comments and documentation are i
 | `SNAPSHOT_PATH` | redirect | yes | its directory must be writable |
 | `SYNC_INTERVAL` | redirect | no | default `10s`; must be under 1 minute |
 | `COUNTRY_HEADER` | redirect | no | header set by the edge proxy with the country (e.g. `CF-IPCountry`); IPs are never stored |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | both | in prod | the platform Collector (`http://otel-collector:4318`); without it nothing is exported and logs only go to stdout |
+| `OTEL_SERVICE_NAME`, `OTEL_RESOURCE_ATTRIBUTES` | both | no | default `qr-dinamics-panel` / `qr-dinamics-redirect`; set `service.namespace=qr-dinamics,deployment.environment=prd` |
+| `OTEL_METRIC_EXPORT_INTERVAL` | both | no | milliseconds; `60000` on the platform |
+| `AUDIT_EMAIL_HMAC_KEY` | panel | in prod | secret key of `account.email_hmac` in the audit events; without it the attribute is left out. Never rotate it without keeping the old one: the archive needs it for five years |
 
 ## Legal and compliance
 

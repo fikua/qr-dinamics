@@ -14,6 +14,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"qrdinamics/internal/audit"
 )
 
 // Retention periods. The privacy policy (internal/legal) states the same
@@ -149,18 +151,26 @@ func cell(s string) string {
 // or destination) so they are never reused; the redirect service picks the
 // change up on its next sync and shows the neutral page.
 func (s *Service) DeleteAccount(ctx context.Context, accountID int64) error {
-	return pgx.BeginFunc(ctx, s.db, func(tx pgx.Tx) error {
+	var email string
+	var tombstoned int64
+	err := pgx.BeginFunc(ctx, s.db, func(tx pgx.Tx) error {
+		// The address is read only to derive account.email_hmac for the audit event.
+		if err := tx.QueryRow(ctx, `SELECT email FROM accounts WHERE id = $1`, accountID).Scan(&email); err != nil {
+			return err
+		}
 		if _, err := tx.Exec(ctx, `DELETE FROM scans WHERE qr_id IN (SELECT id FROM qr_codes WHERE account_id = $1)`, accountID); err != nil {
 			return err
 		}
 		if _, err := tx.Exec(ctx, `DELETE FROM destination_changes WHERE qr_id IN (SELECT id FROM qr_codes WHERE account_id = $1)`, accountID); err != nil {
 			return err
 		}
-		if _, err := tx.Exec(ctx, `
+		codes, err := tx.Exec(ctx, `
 			UPDATE qr_codes SET status = 'deleted', name = '', destination = '', account_id = NULL, updated_at = now()
-			WHERE account_id = $1`, accountID); err != nil {
+			WHERE account_id = $1`, accountID)
+		if err != nil {
 			return err
 		}
+		tombstoned = codes.RowsAffected()
 		tag, err := tx.Exec(ctx, `DELETE FROM accounts WHERE id = $1`, accountID) // cascades sessions, tokens, consents
 		if err != nil {
 			return err
@@ -170,6 +180,12 @@ func (s *Service) DeleteAccount(ctx context.Context, accountID int64) error {
 		}
 		return nil
 	})
+	if err != nil {
+		return err
+	}
+	audit.AccountErased(ctx, accountID, email, tombstoned)
+	audit.Count(ctx, "account.erase", "success", "")
+	return nil
 }
 
 // PurgeResult counts what one retention run removed.
@@ -198,6 +214,7 @@ func (s *Service) Purge(ctx context.Context, now time.Time) (PurgeResult, error)
 		}
 		*st.n = tag.RowsAffected()
 	}
+	audit.RetentionPurged(ctx, r.Scans, r.Sessions, r.Tokens, r.UnverifiedAccounts)
 	return r, nil
 }
 

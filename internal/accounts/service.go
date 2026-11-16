@@ -18,6 +18,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 
+	"qrdinamics/internal/audit"
 	"qrdinamics/internal/i18n"
 	mailer "qrdinamics/internal/mail"
 )
@@ -128,10 +129,16 @@ func (s *Service) Register(ctx context.Context, in Signup) (Account, error) {
 	if err != nil {
 		var pg *pgconn.PgError
 		if errors.As(err, &pg) && pg.Code == "23505" {
+			audit.Count(ctx, "account.register", "rejected", "email_taken")
 			return Account{}, ErrEmailTaken
 		}
 		return Account{}, err
 	}
+	audit.AccountRegistered(ctx, a.ID, a.Email)
+	audit.ConsentRecorded(ctx, a.ID, "terms", LegalVersion, true)
+	audit.ConsentRecorded(ctx, a.ID, "privacy", LegalVersion, true)
+	audit.ConsentRecorded(ctx, a.ID, "marketing", LegalVersion, in.Marketing)
+	audit.Count(ctx, "account.register", "success", "")
 	return a, s.SendVerification(ctx, a)
 }
 
@@ -169,6 +176,9 @@ func (s *Service) Marketing(ctx context.Context, accountID int64) (bool, error) 
 // SetMarketing records a new marketing consent decision (grant or withdrawal).
 func (s *Service) SetMarketing(ctx context.Context, accountID int64, granted bool) error {
 	_, err := s.db.Exec(ctx, `INSERT INTO consents (account_id, kind, version, granted) VALUES ($1, 'marketing', $2, $3)`, accountID, LegalVersion, granted)
+	if err == nil {
+		audit.ConsentRecorded(ctx, accountID, "marketing", LegalVersion, granted)
+	}
 	return err
 }
 
@@ -209,8 +219,8 @@ func (s *Service) SendVerification(ctx context.Context, a Account) error {
 
 // VerifyEmail consumes a verification token.
 func (s *Service) VerifyEmail(ctx context.Context, token string) error {
-	return pgx.BeginFunc(ctx, s.db, func(tx pgx.Tx) error {
-		var accountID int64
+	var accountID int64
+	err := pgx.BeginFunc(ctx, s.db, func(tx pgx.Tx) error {
 		err := tx.QueryRow(ctx, `
 			UPDATE email_tokens SET used_at = now()
 			WHERE token_hash = $1 AND purpose = $2 AND used_at IS NULL AND expires_at > now()
@@ -224,12 +234,17 @@ func (s *Service) VerifyEmail(ctx context.Context, token string) error {
 		_, err = tx.Exec(ctx, `UPDATE accounts SET email_verified_at = coalesce(email_verified_at, now()) WHERE id = $1`, accountID)
 		return err
 	})
+	if err == nil {
+		audit.AccountVerified(ctx, accountID)
+	}
+	return err
 }
 
 // Login checks the credentials and opens a session; it returns the session token.
 func (s *Service) Login(ctx context.Context, email, password string) (string, error) {
 	email, err := NormalizeEmail(email)
 	if err != nil {
+		loginRejected(ctx)
 		return "", ErrInvalidCredentials
 	}
 	if len(password) > 72 {
@@ -240,12 +255,14 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, er
 	err = s.db.QueryRow(ctx, `SELECT id, password_hash FROM accounts WHERE email = $1`, email).Scan(&id, &hash)
 	if errors.Is(err, pgx.ErrNoRows) {
 		bcrypt.CompareHashAndPassword(s.dummyHash, []byte(password))
+		loginRejected(ctx)
 		return "", ErrInvalidCredentials
 	}
 	if err != nil {
 		return "", err
 	}
 	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) != nil {
+		loginRejected(ctx)
 		return "", ErrInvalidCredentials
 	}
 	token, tokenHash, err := newToken()
@@ -256,7 +273,13 @@ func (s *Service) Login(ctx context.Context, email, password string) (string, er
 		tokenHash, id, time.Now().Add(sessionTTL)); err != nil {
 		return "", err
 	}
+	audit.Count(ctx, "login", "success", "")
 	return token, nil
+}
+
+func loginRejected(ctx context.Context) {
+	audit.AuthRejected(ctx, "invalid_credentials")
+	audit.Count(ctx, "login", "rejected", "invalid_credentials")
 }
 
 // Logout closes a session.

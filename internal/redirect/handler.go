@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"time"
 
+	"qrdinamics/internal/audit"
 	"qrdinamics/internal/brand"
 	"qrdinamics/internal/i18n"
 	"qrdinamics/internal/qrcodes"
@@ -31,11 +32,17 @@ func (h *Handler) Routes(mux *http.ServeMux) {
 func (h *Handler) redirect(w http.ResponseWriter, r *http.Request) {
 	code := r.PathValue("code")
 	if !qrcodes.ValidCode(code) {
+		audit.Count(r.Context(), "scan", "unknown", "")
 		h.neutral(w, r, http.StatusNotFound)
 		return
 	}
 	e, ok := h.Table.Lookup(code)
 	if !ok || e.Status != string(qrcodes.Active) {
+		outcome := "unknown"
+		if ok && (e.Status == string(qrcodes.Paused) || e.Status == string(qrcodes.Blocked)) {
+			outcome = e.Status
+		}
+		audit.Count(r.Context(), "scan", outcome, "")
 		h.neutral(w, r, http.StatusNotFound)
 		return
 	}
@@ -48,6 +55,7 @@ func (h *Handler) redirect(w http.ResponseWriter, r *http.Request) {
 			h.Recorder.Record(Scan{QRID: e.ID, At: h.Now().UTC(), Country: country, Device: device})
 		}
 	}
+	audit.Count(r.Context(), "scan", "redirected", "")
 	// 302, never 301, and no-store: browsers must not remember the destination.
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Referrer-Policy", "no-referrer")

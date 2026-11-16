@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"qrdinamics/internal/accounts"
+	"qrdinamics/internal/audit"
 	"qrdinamics/internal/web"
 )
 
@@ -113,8 +114,11 @@ func (h *Handler) exportJSON(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	if err := enc.Encode(e); err != nil {
-		slog.Error("write export", "err", err)
+		slog.ErrorContext(r.Context(), "write export", "err", err)
+		return
 	}
+	a, _ := accounts.FromContext(r.Context())
+	audit.DataExported(r.Context(), a.ID, "json")
 }
 
 func (h *Handler) exportCSV(w http.ResponseWriter, r *http.Request) {
@@ -126,8 +130,11 @@ func (h *Handler) exportCSV(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", `attachment; filename="qr-dinamics-codis-`+time.Now().Format("2006-01-02")+`.csv"`)
 	w.Header().Set("Cache-Control", "no-store")
 	if err := e.WriteCSV(w); err != nil {
-		slog.Error("write csv export", "err", err)
+		slog.ErrorContext(r.Context(), "write csv export", "err", err)
+		return
 	}
+	a, _ := accounts.FromContext(r.Context())
+	audit.DataExported(r.Context(), a.ID, "csv")
 }
 
 // deleteAccount asks for the password and the word ESBORRA, so a stolen

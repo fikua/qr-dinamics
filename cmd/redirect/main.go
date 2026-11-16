@@ -22,6 +22,7 @@ import (
 	"qrdinamics/internal/landing"
 	"qrdinamics/internal/legal"
 	"qrdinamics/internal/redirect"
+	"qrdinamics/internal/telemetry"
 )
 
 func main() {
@@ -38,6 +39,16 @@ func run() error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	shutdownTelemetry, err := telemetry.Setup(ctx, "qr-dinamics-redirect")
+	if err != nil {
+		return fmt.Errorf("telemetry: %w", err)
+	}
+	defer func() {
+		flush, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = shutdownTelemetry(flush)
+	}()
 
 	// Fail fast if the snapshot cannot be written: without it a restart during
 	// a database outage would leave every printed QR on the neutral page.
@@ -100,7 +111,7 @@ func run() error {
 
 	srv := &http.Server{
 		Addr:              cfg.Addr,
-		Handler:           mux,
+		Handler:           telemetry.HTTPHandler(mux),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,

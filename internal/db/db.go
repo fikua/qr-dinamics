@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"sort"
 
+	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -16,7 +17,15 @@ var migrations embed.FS
 
 // Open connects to Postgres and checks the connection.
 func Open(ctx context.Context, url string) (*pgxpool.Pool, error) {
-	pool, err := pgxpool.New(ctx, url)
+	cfg, err := pgxpool.ParseConfig(url)
+	if err != nil {
+		return nil, fmt.Errorf("parse database url: %w", err)
+	}
+	// One span per query, with the statement and its placeholders; parameter
+	// values are left out (otelpgx only adds them on request), and connection
+	// acquisition is not a span (OBS-11).
+	cfg.ConnConfig.Tracer = otelpgx.NewTracer(otelpgx.WithDisableAcquireTracer())
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("open pool: %w", err)
 	}

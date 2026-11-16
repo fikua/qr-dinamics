@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"qrdinamics/internal/audit"
 	"qrdinamics/internal/safety"
 )
 
@@ -121,6 +122,7 @@ func (s *Service) checkDestination(ctx context.Context, raw string) (string, err
 func (s *Service) Create(ctx context.Context, o Owner, name, destination string) (QR, error) {
 	dest, err := s.checkDestination(ctx, destination)
 	if err != nil {
+		count(ctx, "code.create", err)
 		return QR{}, err
 	}
 	var q QR
@@ -158,6 +160,10 @@ func (s *Service) Create(ctx context.Context, o Owner, name, destination string)
 		_, err := tx.Exec(ctx, `INSERT INTO destination_changes (qr_id, destination, is_initial) VALUES ($1, $2, true)`, q.ID, dest)
 		return err
 	})
+	count(ctx, "code.create", err)
+	if err == nil {
+		audit.CodeCreated(ctx, o.ID, q.Code, q.Destination)
+	}
 	return q, err
 }
 
@@ -199,12 +205,15 @@ func (s *Service) Get(ctx context.Context, ownerID, id int64) (QR, error) {
 func (s *Service) ChangeDestination(ctx context.Context, o Owner, id int64, destination string) error {
 	dest, err := s.checkDestination(ctx, destination)
 	if err != nil {
+		count(ctx, "code.change_destination", err)
 		return err
 	}
-	return pgx.BeginFunc(ctx, s.db, func(tx pgx.Tx) error {
+	var code string
+	changed := false
+	err = pgx.BeginFunc(ctx, s.db, func(tx pgx.Tx) error {
 		var status Status
 		var current string
-		err := tx.QueryRow(ctx, `SELECT status, destination FROM qr_codes WHERE id = $1 AND account_id = $2 AND status <> 'deleted' FOR UPDATE`, id, o.ID).Scan(&status, &current)
+		err := tx.QueryRow(ctx, `SELECT status, destination, code FROM qr_codes WHERE id = $1 AND account_id = $2 AND status <> 'deleted' FOR UPDATE`, id, o.ID).Scan(&status, &current, &code)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return ErrNotFound
 		}
@@ -233,8 +242,14 @@ func (s *Service) ChangeDestination(ctx context.Context, o Owner, id int64, dest
 			return err
 		}
 		_, err = tx.Exec(ctx, `INSERT INTO destination_changes (qr_id, destination) VALUES ($1, $2)`, id, dest)
+		changed = err == nil
 		return err
 	})
+	count(ctx, "code.change_destination", err)
+	if err == nil && changed {
+		audit.CodeDestinationChanged(ctx, o.ID, code, dest)
+	}
+	return err
 }
 
 // Rename changes the internal name of a QR.
@@ -248,31 +263,39 @@ func (s *Service) SetPaused(ctx context.Context, ownerID, id int64, paused bool)
 	if !paused {
 		from, to = Paused, Active
 	}
-	tag, err := s.db.Exec(ctx, `UPDATE qr_codes SET status = $3, updated_at = now() WHERE id = $1 AND account_id = $2 AND status = $4`, id, ownerID, to, from)
-	if err != nil {
-		return err
-	}
-	if tag.RowsAffected() == 0 {
+	var code string
+	err := s.db.QueryRow(ctx, `UPDATE qr_codes SET status = $3, updated_at = now() WHERE id = $1 AND account_id = $2 AND status = $4 RETURNING code`, id, ownerID, to, from).Scan(&code)
+	if errors.Is(err, pgx.ErrNoRows) {
 		if _, err := s.Get(ctx, ownerID, id); err != nil {
 			return err
 		}
 		return ErrNotEditable
 	}
+	if err != nil {
+		return err
+	}
+	event := "code.resumed"
+	if paused {
+		event = "code.paused"
+	}
+	audit.CodeStatusChanged(ctx, event, ownerID, code)
 	return nil
 }
 
 // Delete frees the QR's quota slot and erases its data (name, destination,
 // history, scans). The short code is kept as a tombstone and never reused (US-06).
 func (s *Service) Delete(ctx context.Context, ownerID, id int64) error {
-	return pgx.BeginFunc(ctx, s.db, func(tx pgx.Tx) error {
-		tag, err := tx.Exec(ctx, `
+	var code string
+	err := pgx.BeginFunc(ctx, s.db, func(tx pgx.Tx) error {
+		err := tx.QueryRow(ctx, `
 			UPDATE qr_codes SET status = 'deleted', name = '', destination = '', updated_at = now()
-			WHERE id = $1 AND account_id = $2 AND status IN ('active', 'paused')`, id, ownerID)
+			WHERE id = $1 AND account_id = $2 AND status IN ('active', 'paused')
+			RETURNING code`, id, ownerID).Scan(&code)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrNotFound
+		}
 		if err != nil {
 			return err
-		}
-		if tag.RowsAffected() == 0 {
-			return ErrNotFound
 		}
 		if _, err := tx.Exec(ctx, `DELETE FROM destination_changes WHERE qr_id = $1`, id); err != nil {
 			return err
@@ -280,6 +303,33 @@ func (s *Service) Delete(ctx context.Context, ownerID, id int64) error {
 		_, err = tx.Exec(ctx, `DELETE FROM scans WHERE qr_id = $1`, id)
 		return err
 	})
+	if err == nil {
+		audit.CodeStatusChanged(ctx, "code.deleted", ownerID, code)
+	}
+	return err
+}
+
+// count records one code operation in qr.business.operations: success, a
+// refusal with its stable error.type, or an error.
+func count(ctx context.Context, operation string, err error) {
+	switch {
+	case err == nil:
+		audit.Count(ctx, operation, "success", "")
+	case errors.Is(err, ErrQuota):
+		audit.Count(ctx, operation, "rejected", "quota")
+	case errors.Is(err, ErrEditLimit):
+		audit.Count(ctx, operation, "rejected", "edit_limit")
+	case errors.Is(err, ErrNotFound), errors.Is(err, ErrNotEditable):
+		audit.Count(ctx, operation, "rejected", "not_editable")
+	case errors.Is(err, safety.ErrUnsafe):
+		audit.Count(ctx, operation, "rejected", "unsafe_destination")
+	case errors.Is(err, ErrCheckUnavailable):
+		audit.Count(ctx, operation, "error", "safety_check_unavailable")
+	case errors.Is(err, safety.ErrInvalid):
+		audit.Count(ctx, operation, "rejected", "invalid_destination")
+	default:
+		audit.Count(ctx, operation, "error", "internal")
+	}
 }
 
 // History returns the destination changes of a QR, newest first.

@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -12,12 +13,14 @@ import (
 	"syscall"
 	"time"
 
+	"qrdinamics/internal/audit"
 	"qrdinamics/internal/config"
 	"qrdinamics/internal/db"
 	"qrdinamics/internal/mail"
 	"qrdinamics/internal/panel"
 	"qrdinamics/internal/privacy"
 	"qrdinamics/internal/safety"
+	"qrdinamics/internal/telemetry"
 )
 
 func main() {
@@ -38,6 +41,17 @@ func run() error {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	shutdownTelemetry, err := telemetry.Setup(ctx, "qr-dinamics-panel")
+	if err != nil {
+		return fmt.Errorf("telemetry: %w", err)
+	}
+	defer func() {
+		flush, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = shutdownTelemetry(flush)
+	}()
+	audit.SetEmailKey(os.Getenv("AUDIT_EMAIL_HMAC_KEY"))
 
 	pool, err := db.Open(ctx, cfg.DatabaseURL)
 	if err != nil {
@@ -70,7 +84,7 @@ func run() error {
 
 	srv := &http.Server{
 		Addr:              cfg.Addr,
-		Handler:           p.Handler,
+		Handler:           telemetry.HTTPHandler(p.Handler),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,
