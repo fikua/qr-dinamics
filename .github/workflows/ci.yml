@@ -1,0 +1,56 @@
+name: CI
+
+# Shared workflows: fikua/fikua-ci-workflows (ADR 0018). Publishes
+# fikua/qr-dinamics (both binaries) on every push to main once the tests pass;
+# deploying it is a separate step (fikua-platform-iac/projects/qr-dinamics).
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md']
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    uses: fikua/fikua-ci-workflows/.github/workflows/go-ci.yml@2d40554f8f019fc7e0968d97e6dc27f2b4778352  # v1.1.0
+    with:
+      postgres: true
+      # The integration tests share one database: one package at a time.
+      test-command: go test -race -p 1 -count=1 ./...
+      extra-checks: |
+        ./scripts/third-party-licenses.sh
+        git diff --exit-code -- internal/legal/third_party_licenses.txt
+
+  gitleaks:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    uses: fikua/fikua-ci-workflows/.github/workflows/gitleaks.yml@2d40554f8f019fc7e0968d97e6dc27f2b4778352  # v1.1.0
+
+  sonar:
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: fikua/fikua-ci-workflows/.github/workflows/sonar.yml@2d40554f8f019fc7e0968d97e6dc27f2b4778352  # v1.1.0
+    with:
+      postgres: true
+      coverpkg: ./internal/...
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  release:
+    needs: test
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      packages: write
+    uses: fikua/fikua-ci-workflows/.github/workflows/image-release.yml@2d40554f8f019fc7e0968d97e6dc27f2b4778352  # v1.1.0
+    with:
+      image: qr-dinamics
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
