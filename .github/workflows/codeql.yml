@@ -17,4 +17,4 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: fikua/fikua-ci-workflows/.github/workflows/codeql.yml@v1
+    uses: fikua/fikua-ci-workflows/.github/workflows/codeql.yml@2d40554f8f019fc7e0968d97e6dc27f2b4778352  # v1.1.0
