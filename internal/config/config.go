@@ -69,12 +69,18 @@ func (r *reader) legal() LegalHolder {
 	}
 }
 
+// PanelAddr is the panel's listen address (PANEL_ADDR, default :8080).
+func PanelAddr() string { return (&reader{}).optional("PANEL_ADDR", ":8080") }
+
+// RedirectAddr is the redirect's listen address (REDIRECT_ADDR, default :8081).
+func RedirectAddr() string { return (&reader{}).optional("REDIRECT_ADDR", ":8081") }
+
 // LoadPanel reads the panel configuration.
 func LoadPanel() (Panel, error) {
 	r := reader{}
 	c := Panel{
 		Env:              r.env(),
-		Addr:             r.optional("PANEL_ADDR", ":8080"),
+		Addr:             PanelAddr(),
 		DatabaseURL:      r.required("DATABASE_URL"),
 		PanelBaseURL:     r.url("PANEL_BASE_URL"),
 		RedirectBaseURL:  r.url("REDIRECT_BASE_URL"),
@@ -102,7 +108,7 @@ func LoadRedirect() (Redirect, error) {
 	r := reader{}
 	c := Redirect{
 		Env:           r.env(),
-		Addr:          r.optional("REDIRECT_ADDR", ":8081"),
+		Addr:          RedirectAddr(),
 		DatabaseURL:   r.required("DATABASE_URL"),
 		SnapshotPath:  r.required("SNAPSHOT_PATH"),
 		SyncInterval:  r.duration("SYNC_INTERVAL", 10*time.Second),
