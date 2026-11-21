@@ -342,10 +342,10 @@ func TestPlumbing(t *testing.T) {
 	if h.Get("Location") != "/qr" {
 		t.Fatalf("root -> %q", h.Get("Location"))
 	}
-	code, body, _ := c.get("/health")
+	code, body, h := c.get("/health")
 	expect(t, "health", code, http.StatusOK)
-	if body != "ok" {
-		t.Fatalf("health body %q", body)
+	if body != `{"status":"pass","checks":{"postgres:connection":[{"status":"pass"}]}}`+"\n" || h.Get("Content-Type") != "application/health+json" {
+		t.Fatalf("health %q %q", h.Get("Content-Type"), body)
 	}
 	code, _, h = c.get("/static/app.css")
 	expect(t, "css", code, http.StatusOK)
