@@ -2,9 +2,9 @@
 // (fikua-docs conv-observability.md, OBS-17; conv-deployment.md, DEP-10):
 //
 //   - GET /health answers application/health+json, the format of the IETF
-//     draft draft-inadarei-api-health-check-06: {"status":"pass"} with 200, or
-//     {"status":"fail"} with 503 when a check fails. Check names only, never
-//     error details.
+//     draft draft-inadarei-api-health-check-06: {"status":"pass"} with 200,
+//     {"status":"warn"} with 200 when it works degraded, or {"status":"fail"}
+//     with 503 when a check fails. Check names only, never error details.
 //   - "<binary> healthcheck" probes that endpoint on 127.0.0.1 and exits 0 or 1,
 //     for the image's HEALTHCHECK (the image has no shell or curl).
 package health
@@ -12,6 +12,7 @@ package health
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net"
 	"net/http"
 	"os"
@@ -22,8 +23,12 @@ import (
 // ContentType of every health answer.
 const ContentType = "application/health+json"
 
-// Check reports whether one dependency the service needs works.
+// Check reports whether one dependency the service needs works: nil is pass,
+// an error wrapping ErrWarn is warn (works, degraded), any other error is fail.
 type Check func(ctx context.Context) error
+
+// ErrWarn marks a check result as "warn".
+var ErrWarn = errors.New("health: degraded")
 
 type checkResult struct {
 	Status string `json:"status"`
@@ -53,7 +58,12 @@ func Handler(version string, checks map[string]Check) http.HandlerFunc {
 		}
 		for _, n := range names {
 			st := "pass"
-			if err := checks[n](ctx); err != nil {
+			if err := checks[n](ctx); errors.Is(err, ErrWarn) {
+				st = "warn"
+				if resp.Status == "pass" {
+					resp.Status = "warn"
+				}
+			} else if err != nil {
 				st = "fail"
 				resp.Status = "fail"
 			}

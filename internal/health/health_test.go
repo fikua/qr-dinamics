@@ -39,6 +39,16 @@ func TestHandlerFailHidesErrors(t *testing.T) {
 	}
 }
 
+func TestHandlerWarn(t *testing.T) {
+	rec := httptest.NewRecorder()
+	checks := map[string]Check{"cache:fresh": func(context.Context) error { return ErrWarn }}
+	Handler("", checks)(rec, httptest.NewRequest("GET", "/health", nil))
+	want := `{"status":"warn","checks":{"cache:fresh":[{"status":"warn"}]}}` + "\n"
+	if rec.Code != 200 || rec.Body.String() != want {
+		t.Fatalf("%d %s", rec.Code, rec.Body.String())
+	}
+}
+
 func TestProbe(t *testing.T) {
 	ok := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/health" {
