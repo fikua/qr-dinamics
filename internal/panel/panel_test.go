@@ -379,6 +379,11 @@ func TestAccessRestriction(t *testing.T) {
 	w := httptest.NewRecorder()
 	p.Handler.ServeHTTP(w, httptest.NewRequest("GET", "/login", nil))
 	expect(t, "without access token", w.Code, http.StatusForbidden)
+
+	// The image's HEALTHCHECK has no Access token: /health must still answer.
+	w = httptest.NewRecorder()
+	p.Handler.ServeHTTP(w, httptest.NewRequest("GET", "/health", nil))
+	expect(t, "health without access token", w.Code, http.StatusOK)
 }
 
 // The panel, its error messages and the e-mails follow the browser language,
