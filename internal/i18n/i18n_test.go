@@ -67,7 +67,13 @@ func TestSwitch(t *testing.T) {
 			t.Errorf("cookie: %+v", c)
 		}
 	}
+	// Behind a proxy that speaks plain HTTP, the cookie is still Secure.
 	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, httptest.NewRequest("GET", "http://qr.example/lang/ca", nil))
+	if c := w.Result().Cookies(); len(c) != 1 || !c[0].Secure {
+		t.Errorf("plain HTTP cookie: %+v", c)
+	}
+	w = httptest.NewRecorder()
 	mux.ServeHTTP(w, httptest.NewRequest("GET", "/lang/fr", nil))
 	if w.Code != http.StatusNotFound {
 		t.Errorf("unknown language: %d", w.Code)
