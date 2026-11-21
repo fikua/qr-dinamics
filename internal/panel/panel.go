@@ -63,7 +63,6 @@ func New(cfg config.Panel, d Deps) (*Panel, error) {
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/qr", http.StatusSeeOther)
 	})
-	mux.HandleFunc("GET /health", health.Handler("", map[string]health.Check{"postgres:connection": d.DB.Ping}))
 	legalPages.Routes(mux)
 	accountHandler.Routes(mux)
 	qrHandler.Routes(mux, accountHandler.RequireAccount)
@@ -74,5 +73,11 @@ func New(cfg config.Panel, d Deps) (*Panel, error) {
 	if cfg.AccessTeamDomain != "" {
 		handler = access.NewVerifier(cfg.AccessTeamDomain, cfg.AccessAudience).Middleware(handler)
 	}
-	return &Panel{Handler: handler, Privacy: privacySvc}, nil
+	// GET /health stays outside Cloudflare Access: the image's HEALTHCHECK
+	// calls it from inside the container, without an Access token, and
+	// Traefik routes only to healthy containers (DEP-10). It reveals nothing.
+	root := http.NewServeMux()
+	root.HandleFunc("GET /health", health.Handler("", map[string]health.Check{"postgres:connection": d.DB.Ping}))
+	root.Handle("/", handler)
+	return &Panel{Handler: root, Privacy: privacySvc}, nil
 }
