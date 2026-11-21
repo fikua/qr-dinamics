@@ -11,6 +11,7 @@ import (
 	"qrdinamics/internal/accounts"
 	"qrdinamics/internal/brand"
 	"qrdinamics/internal/config"
+	"qrdinamics/internal/health"
 	"qrdinamics/internal/i18n"
 	"qrdinamics/internal/legal"
 	"qrdinamics/internal/mail"
@@ -62,13 +63,7 @@ func New(cfg config.Panel, d Deps) (*Panel, error) {
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/qr", http.StatusSeeOther)
 	})
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
-		if err := d.DB.Ping(r.Context()); err != nil {
-			http.Error(w, "database unavailable", http.StatusServiceUnavailable)
-			return
-		}
-		w.Write([]byte("ok"))
-	})
+	mux.HandleFunc("GET /health", health.Handler("", map[string]health.Check{"postgres:connection": d.DB.Ping}))
 	legalPages.Routes(mux)
 	accountHandler.Routes(mux)
 	qrHandler.Routes(mux, accountHandler.RequireAccount)

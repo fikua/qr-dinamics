@@ -16,6 +16,7 @@ import (
 	"qrdinamics/internal/audit"
 	"qrdinamics/internal/config"
 	"qrdinamics/internal/db"
+	"qrdinamics/internal/health"
 	"qrdinamics/internal/mail"
 	"qrdinamics/internal/panel"
 	"qrdinamics/internal/privacy"
@@ -24,6 +25,9 @@ import (
 )
 
 func main() {
+	if health.IsHealthcheck() {
+		os.Exit(health.Probe(config.PanelAddr()))
+	}
 	if err := run(); err != nil {
 		slog.Error("panel stopped", "err", err)
 		os.Exit(1)
