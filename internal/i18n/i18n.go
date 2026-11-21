@@ -152,7 +152,9 @@ func Switch(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name: CookieName, Value: string(l), Path: "/", MaxAge: cookieMaxAge,
 		HttpOnly: true, SameSite: http.SameSiteLaxMode,
-		Secure: r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https", // NOSONAR go:S2092 — Secure follows the scheme of the request
+		// Always Secure: production is HTTPS end to end, and browsers keep
+		// Secure cookies on http://localhost.
+		Secure: true,
 	})
 	w.Header().Set("Cache-Control", "no-store")
 	http.Redirect(w, r, backPath(r), http.StatusSeeOther)
