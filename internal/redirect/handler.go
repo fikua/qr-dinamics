@@ -1,6 +1,8 @@
 package redirect
 
 import (
+	"context"
+	"errors"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -8,6 +10,7 @@ import (
 
 	"qrdinamics/internal/audit"
 	"qrdinamics/internal/brand"
+	"qrdinamics/internal/health"
 	"qrdinamics/internal/i18n"
 	"qrdinamics/internal/qrcodes"
 )
@@ -62,16 +65,20 @@ func (h *Handler) redirect(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, e.Destination, http.StatusFound)
 }
 
+// health: healthy once the table was loaded from the database or a snapshot,
+// even with no codes yet; never loaded means it cannot answer for any code.
+// It does not depend on the database on purpose (codes keep resolving while
+// it is down).
 func (h *Handler) health(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "no-store")
-	// Healthy once the table was loaded from the database or a snapshot, even
-	// with no codes yet; never loaded means it cannot answer for any code.
-	if !h.Table.Loaded() {
-		http.Error(w, "redirect table not loaded", http.StatusServiceUnavailable)
-		return
-	}
-	w.Write([]byte("ok"))
+	health.Handler("", map[string]health.Check{"table:loaded": func(context.Context) error {
+		if !h.Table.Loaded() {
+			return errNotLoaded
+		}
+		return nil
+	}})(w, r)
 }
+
+var errNotLoaded = errors.New("redirect table not loaded")
 
 var neutralPage = template.Must(template.New("neutral").Funcs(brand.TemplateFuncs()).Funcs(i18n.Funcs(i18n.CA)).Parse(`<!doctype html>
 <html lang="{{.Lang.Locale}}">

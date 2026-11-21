@@ -18,6 +18,7 @@ import (
 
 	"qrdinamics/internal/brand"
 	"qrdinamics/internal/config"
+	"qrdinamics/internal/health"
 	"qrdinamics/internal/i18n"
 	"qrdinamics/internal/landing"
 	"qrdinamics/internal/legal"
@@ -26,6 +27,9 @@ import (
 )
 
 func main() {
+	if health.IsHealthcheck() {
+		os.Exit(health.Probe(config.RedirectAddr()))
+	}
 	if err := run(); err != nil {
 		slog.Error("redirect stopped", "err", err)
 		os.Exit(1)
