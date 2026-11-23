@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   test:
-    uses: fikua/fikua-ci-workflows/.github/workflows/go-ci.yml@2d40554f8f019fc7e0968d97e6dc27f2b4778352  # v1.1.0
+    uses: fikua/fikua-ci-workflows/.github/workflows/go-ci.yml@617baa88c2f37b53b84a9024f72298da1caa35cf  # v1.3.0
     with:
       postgres: true
       # The integration tests share one database: one package at a time.
